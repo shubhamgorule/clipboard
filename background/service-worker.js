@@ -1,4 +1,4 @@
 chrome.runtime.onInstalled.addListener(() => {
-  // Placeholder: later seed storage, migrations, etc.
+  // Migrations and storage seeding live here in future versions.
 });
 
