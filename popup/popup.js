@@ -18,16 +18,16 @@ import {
 const app = document.getElementById("app");
 
 const ICONS = {
-  settings: "./assets/settings.png",
-  add: "./assets/add.png",
-  search: "./assets/search.png",
-  reorder: "./assets/reorder.png",
-  copy: "./assets/copy.png",
-  edit: "./assets/edit.png",
-  trash: "./assets/trash.png",
-  refresh: "./assets/refresh.png",
-  check: "./assets/check.png",
-  close: "./assets/close.png"
+  settings: "./assets/settings.svg",
+  add: "./assets/add.svg",
+  search: "./assets/search.svg",
+  reorder: "./assets/reorder.svg",
+  copy: "./assets/copy.svg",
+  edit: "./assets/edit.svg",
+  trash: "./assets/trash.svg",
+  refresh: "./assets/refresh.svg",
+  check: "./assets/check.svg",
+  close: "./assets/close.svg"
 };
 
 const state = {
