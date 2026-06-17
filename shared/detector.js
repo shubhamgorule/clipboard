@@ -27,20 +27,17 @@ export function detect(text) {
   }
 
   if (EMAIL_RE.test(content)) {
-    const user = content.split("@")[0] || "";
-    const suggestedLabel = user && user.length <= 24 ? `${user}@…` : "Email";
-    return { contentType: "email", suggestedCategoryId: "email", suggestedLabel };
+    return { contentType: "email", suggestedCategoryId: "email", suggestedLabel: "" };
   }
 
   const url = tryParseUrl(content);
   if (url) {
     const hostname = url.hostname.replace(/^www\./, "").toLowerCase();
     const isSocial = SOCIAL_HOSTNAMES.has(hostname);
-    const suggestedLabel = hostname.split(".")[0]?.slice(0, 1).toUpperCase() + hostname.split(".")[0]?.slice(1) || "Link";
     return {
       contentType: "link",
       suggestedCategoryId: isSocial ? "socials" : "general",
-      suggestedLabel
+      suggestedLabel: ""
     };
   }
 

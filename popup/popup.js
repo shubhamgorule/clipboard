@@ -194,6 +194,7 @@ function tabs() {
 
 function toolbar() {
   const search = el("input", {
+    id: "search",
     class: "search",
     placeholder: "Search…",
     value: state.query,
@@ -502,12 +503,12 @@ function addModal() {
   function applySmartDefaultsIfAllowed() {
     if (s.smartRouting === false) return;
     if (!draft.categoryTouched) draft.categoryId = suggestion.suggestedCategoryId;
-    if (!draft.labelTouched && !draft.label && suggestion.suggestedLabel) draft.label = suggestion.suggestedLabel;
   }
 
   applySmartDefaultsIfAllowed();
 
   const content = el("textarea", {
+    id: "add-content",
     class: "textarea",
     placeholder: "Paste text, link, or email…",
     onInput: (e) => {
@@ -526,22 +527,14 @@ function addModal() {
   content.value = draft.content;
 
   const label = el("input", {
+    id: "add-label",
     class: "input",
     placeholder: "Label (optional)",
     onInput: (e) => {
       draft.labelTouched = true;
       draft.label = e.target.value;
     },
-    onKeydown: (e) => {
-      if (e.key === "Tab" && s.tabAssist !== false) {
-        if (!draft.labelTouched && !draft.label && suggestion.suggestedLabel) {
-          e.preventDefault();
-          draft.label = suggestion.suggestedLabel;
-          draft.labelTouched = true;
-          render();
-        }
-      }
-    }
+    onKeydown: () => {}
   });
   label.value = draft.label;
 
@@ -623,6 +616,8 @@ function addModal() {
 function render() {
   if (!state.data) return;
 
+  const focus = captureFocus();
+
   app.replaceChildren(
     el("div", { class: "card" }, [
       header(),
@@ -633,6 +628,31 @@ function render() {
   const existingOverlay = document.querySelector(".modalOverlay");
   if (existingOverlay) existingOverlay.remove();
   if (state.addOpen) document.body.append(addModal());
+
+  restoreFocus(focus);
+}
+
+function captureFocus() {
+  const ae = document.activeElement;
+  if (!ae) return null;
+  const id = ae.id || null;
+  if (!id) return null;
+  const canSelect = typeof ae.selectionStart === "number" && typeof ae.selectionEnd === "number";
+  return {
+    id,
+    selectionStart: canSelect ? ae.selectionStart : null,
+    selectionEnd: canSelect ? ae.selectionEnd : null
+  };
+}
+
+function restoreFocus(focus) {
+  if (!focus?.id) return;
+  const node = document.getElementById(focus.id);
+  if (!node) return;
+  node.focus?.();
+  if (typeof focus.selectionStart === "number" && typeof focus.selectionEnd === "number") {
+    node.setSelectionRange?.(focus.selectionStart, focus.selectionEnd);
+  }
 }
 
 async function refresh() {

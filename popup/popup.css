@@ -182,14 +182,13 @@ body{
   align-items:center;
   cursor:pointer;
   border: 1px solid transparent;
-  transition: background var(--t) ease, border-color var(--t) ease, transform var(--t) ease;
+  transition: border-color var(--t) ease;
 }
-.row:hover{
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.08);
-  transform: translateY(-1px);
+.row:focus-visible{
+  outline: none;
+  border-color: rgba(124,92,255,.35);
+  box-shadow: 0 0 0 4px rgba(124,92,255,.12);
 }
-.row:active{ transform: translateY(0px); }
 
 .rowMain{
   min-width: 0;
