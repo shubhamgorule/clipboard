@@ -8,6 +8,7 @@ import { createEmptyState } from "../ui/components/emptyState.js";
 import { createSettingsView } from "../ui/components/settingsView.js";
 import { showToast } from "../ui/components/toast.js";
 import { detectCategory } from "../shared/categoryDetector.js";
+import { loadData, saveData } from "../shared/storage.js";
 
 const UNCATEGORIZED = "Uncategorized";
 const ALL_CATEGORY = "All";
@@ -31,6 +32,10 @@ const state = {
 
 function $(id) {
   return document.getElementById(id);
+}
+
+function persist() {
+  return saveData({ items: state.items, labels: state.labels });
 }
 
 function render({ screenTransition = false, listEnter = false } = {}) {
@@ -153,9 +158,19 @@ function defaultAddCategory() {
 
 function syncAddCategoryFromQuery() {
   if (state.addCategoryLocked) return;
-  state.addCategory = (state.query ?? "").trim()
-    ? resolveDetectedCategory(state.query)
-    : defaultAddCategory();
+
+  const trimmed = (state.query ?? "").trim();
+  if (!trimmed) {
+    state.addCategory = defaultAddCategory();
+    return;
+  }
+
+  const detected = resolveDetectedCategory(trimmed);
+  if (detected !== UNCATEGORIZED) {
+    state.addCategory = detected;
+  }
+  // Inconclusive detection (plain text, or Mail/General/Socials not in user labels):
+  // keep the current category from the tab default or manual picker selection.
 }
 
 function getCategoryPickerOptions() {
@@ -182,8 +197,8 @@ function enterSearchMode() {
     return;
   }
   state.mode = "search";
-  state.addCategoryLocked = false;
   state.addCategory = defaultAddCategory();
+  state.addCategoryLocked = state.labels.includes(state.activeCategory);
 
   const composer = document.querySelector(".cb-composer");
   if (composer) {
@@ -228,7 +243,8 @@ function bindSearchInput(input) {
   input.addEventListener("input", (e) => {
     state.query = e.target.value;
     if (!(state.query ?? "").trim()) {
-      state.addCategoryLocked = false;
+      state.addCategoryLocked = state.labels.includes(state.activeCategory);
+      state.addCategory = defaultAddCategory();
     }
     autoResizeSearchInput(input);
     syncSearchUI();
@@ -270,6 +286,7 @@ function addItem() {
   state.addCategory = defaultAddCategory();
   state.editingId = null;
   state.editDraft = "";
+  void persist();
   render({ listEnter: true });
   showToast({ message: "Added to clipboard" });
 }
@@ -369,6 +386,7 @@ function confirmEdit(id) {
   state.editingId = null;
   state.editDraft = "";
   state.editCategory = UNCATEGORIZED;
+  void persist();
   render();
   showToast({ message: "Changes saved" });
 }
@@ -381,6 +399,7 @@ function deleteItem(id) {
     state.editCategory = UNCATEGORIZED;
   }
   if (state.confirmDeleteId === id) state.confirmDeleteId = null;
+  void persist();
   render();
   showToast({ message: "Item deleted", tone: "danger" });
 }
@@ -461,6 +480,7 @@ function moveItem(fromId, toId, placement = "before") {
 
   const [moved] = state.items.splice(fromIdx, 1);
   state.items.splice(insertIdx, 0, moved);
+  void persist();
   render();
 
   const nextContainer = document.querySelector(".cb-container:not(.cb-container--empty)");
@@ -487,6 +507,7 @@ function addLabel() {
   if (!hasCategories()) {
     state.activeCategory = ALL_CATEGORY;
   }
+  void persist();
   render();
   showToast({ message: "Category added" });
 }
@@ -522,6 +543,7 @@ function finalizeRemoveLabel(name, { moveTo } = {}) {
     state.addCategoryLocked = false;
   }
   state.confirmRemoveLabel = null;
+  void persist();
   render();
   showToast({ message: "Category removed", tone: "danger" });
 }
@@ -887,5 +909,16 @@ function buildListContainer(className) {
   return container;
 }
 
-render({ listEnter: true });
-preloadIcons();
+async function init() {
+  try {
+    const data = await loadData();
+    state.items = data.items;
+    state.labels = data.labels;
+  } catch (err) {
+    console.error("Failed to load clipboard data:", err);
+  }
+  render({ listEnter: true });
+  preloadIcons();
+}
+
+init();
