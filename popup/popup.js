@@ -592,7 +592,7 @@ function addModal() {
       el(
         "button",
         { class: "iconBtn", title: "Close", onClick: () => closeAdd() },
-        [svgIcon("M18 6L6 18M6 6l12 12")]
+        [icon(ICONS.close, "Close")]
       )
     ]),
     el("div", { class: "modalBody" }, [
