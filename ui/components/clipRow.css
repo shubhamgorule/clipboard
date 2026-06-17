@@ -1,8 +1,8 @@
 .cb-clipRow{
   width: 100%;
-  height: var(--cb-row-h);
   min-height: var(--cb-row-h);
-  padding: 0 var(--cb-pad-x);
+  padding: var(--cb-space-8) var(--cb-row-pad-x);
+  padding-right: var(--cb-row-pad-right);
   display:flex;
   align-items:center;
   gap: var(--cb-space-8);
@@ -17,28 +17,30 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
-  color: var(--cb-color-row);
+  color: var(--cb-color-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .cb-clipRow--hover .cb-clipRowText:not(.cb-clipRowText--search),
 .cb-clipRow:hover .cb-clipRowText:not(.cb-clipRowText--search){
-  color: var(--cb-color-text);
+  color: var(--cb-color-muted);
 }
 
-/* Default state: hidden fade */
+/* Default state: hidden fade (vertically centered with dock) */
 .cb-clipRowActionsFade{
   position:absolute;
-  inset: 0 0 0 auto;
-  height: 100%;
+  top: 50%;
+  right: 0;
+  width: 160px;
+  height: var(--cb-row-h);
   display:flex;
   align-items:center;
   padding-left: 32px;
   opacity: 0;
   pointer-events:none;
+  transform: translateY(-50%);
   background: linear-gradient(90deg, rgba(255,255,255,0) 0%, #ffffff 20.917%, #ffffff 100%);
   box-shadow: 0px 0px 32px 0px #ffffff;
 }
@@ -47,31 +49,38 @@
 .cb-clipRowActionsDock{
   position:absolute;
   right: var(--cb-dock-right);
-  top: 0;
+  top: 50%;
   height: var(--cb-row-h);
   display:flex;
   align-items:center;
   gap: var(--cb-space-4);
   padding: var(--cb-dock-pad);
   box-sizing: border-box;
+  transform: translateY(-50%);
   background: #ffffff;
   border: 1px solid var(--cb-color-border);
   border-radius: var(--cb-dock-radius);
   box-shadow: var(--cb-shadow-action);
   overflow: visible;
   z-index: 5;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
-.cb-clipRowActionsDock{ display:none; }
-.cb-clipRow:hover .cb-clipRowActionsDock{ display:flex; }
-.cb-clipRow--edit .cb-clipRowActionsDock{ display:flex; }
+.cb-clipRow:hover .cb-clipRowActionsDock,
+.cb-clipRow--edit .cb-clipRowActionsDock{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 
 .cb-clipRowText--search{
-  color: var(--cb-color-row);
+  color: var(--cb-color-muted);
 }
 
 .cb-clipRowTextMuted{
-  color: var(--cb-color-row);
+  color: var(--cb-color-muted);
 }
 
 .cb-clipRowTextMatch{
@@ -81,22 +90,113 @@
 .cb-clipRowEditInput{
   flex: 1 0 0;
   min-width: 1px;
+  width: 100%;
   margin: 0;
   padding: 0;
   border: 0;
   outline: none;
+  resize: none;
+  overflow: hidden;
+  min-height: 20px;
+  max-height: 160px;
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
   color: var(--cb-color-text);
   background: transparent;
   font-family: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  field-sizing: content;
 }
 
 .cb-clipRow--dragging{
-  opacity: 0.45;
+  opacity: 0.35;
+  z-index: 2;
+}
+
+.cb-clipRow--dropBefore::before,
+.cb-clipRow--dropAfter::after{
+  content: "";
+  position: absolute;
+  left: var(--cb-row-pad-x);
+  right: var(--cb-row-pad-right);
+  height: 2px;
+  background: var(--cb-color-text);
+  z-index: 6;
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+.cb-clipRow--dropBefore::before{
+  top: 0;
+  transform: translateY(calc(-1 * var(--cb-space-4) / 2));
+}
+
+.cb-clipRow--dropAfter::after{
+  bottom: 0;
+  transform: translateY(calc(var(--cb-space-4) / 2));
+}
+
+.cb-clipRow--actionsLocked:hover .cb-clipRowText:not(.cb-clipRowText--search){
+  color: var(--cb-color-text);
+}
+
+.cb-clipRow--edit .cb-clipRowActionsFade{
+  opacity: 1;
+  pointer-events: none;
+}
+
+.cb-clipRowDockCategory{
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  height: 100%;
+  padding-right: var(--cb-space-4);
+  margin-right: var(--cb-space-4);
+  border-right: 1px solid var(--cb-color-border);
+}
+
+.cb-clipRowActionsDock .cb-categoryPicker{
+  display: flex;
+  align-items: center;
+  height: var(--cb-ib-sm);
+}
+
+.cb-clipRowActionsDock .cb-categoryPickerTrigger{
+  height: 100%;
+  min-height: var(--cb-ib-sm);
+  max-width: none;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--cb-space-12);
+  background: transparent;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.cb-clipRowActionsDock .cb-categoryPickerTrigger:hover,
+.cb-clipRowActionsDock .cb-categoryPickerTrigger[aria-expanded="true"]{
+  background: var(--cb-color-pill);
+  border-color: transparent;
+}
+
+.cb-clipRowActionsDock .cb-categoryPickerLabel{
+  font-size: 13px;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 72px;
+}
+
+.cb-clipRowActionsDock .cb-categoryPickerChevron{
+  width: 14px;
+  height: 14px;
 }
 
 .cb-clipRow--dropTarget{
-  background: var(--cb-color-pill);
+  background: transparent;
 }

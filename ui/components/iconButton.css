@@ -39,6 +39,10 @@
   color: var(--cb-icon-color-hover, #1a1a1a);
 }
 
+.cb-iconButton--danger{
+  color: var(--cb-icon-color, #1a1a1a);
+}
+
 .cb-iconButton--danger:hover{
   background: var(--cb-color-danger-bg);
   color: var(--cb-color-danger);

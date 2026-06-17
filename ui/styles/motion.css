@@ -1,0 +1,324 @@
+/*
+ * Motion layer (experimental)
+ *
+ * REVERSIBLE — disable in either way:
+ *   1. Remove class="cb-motion" from <html> in popup/index.html
+ *   2. Comment out the motion.css <link> in popup/index.html
+ *
+ * All rules are scoped under html.cb-motion so base styles stay unchanged.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  html.cb-motion *,
+  html.cb-motion *::before,
+  html.cb-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+html.cb-motion {
+  --cb-motion-duration-fast: 0.14s;
+  --cb-motion-duration-normal: 0.22s;
+  --cb-motion-duration-slow: 0.32s;
+  --cb-motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --cb-motion-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --cb-motion-ease-composer: cubic-bezier(0.22, 1, 0.36, 1);
+  --cb-motion-composer-duration: 0.34s;
+}
+
+@keyframes cb-motion-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cb-motion-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes cb-motion-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cb-motion-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cb-motion-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Settings ↔ home screen transition only (class set in popup.js) */
+html.cb-motion .cb-surfaceInner.cb-motion-screen {
+  animation: cb-motion-view-in var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+/* Interactive surfaces */
+html.cb-motion .cb-iconButton {
+  transition:
+    background-color var(--cb-motion-duration-fast) ease,
+    color var(--cb-motion-duration-fast) ease,
+    transform var(--cb-motion-duration-fast) var(--cb-motion-ease-out);
+}
+
+html.cb-motion .cb-iconButton:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+html.cb-motion .cb-categoryChip,
+html.cb-motion .cb-addCategoriesBtn,
+html.cb-motion .cb-subRowButton,
+html.cb-motion .cb-pillBtn,
+html.cb-motion .cb-categoryPickerTrigger,
+html.cb-motion .cb-categoryPickerOption {
+  transition:
+    background-color var(--cb-motion-duration-fast) ease,
+    border-color var(--cb-motion-duration-fast) ease,
+    color var(--cb-motion-duration-fast) ease,
+    opacity var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-clipRowText {
+  transition: color var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-categoryChipText {
+  transition: color var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-clipRow--dragging {
+  transition: opacity var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-clipRow--dropBefore::before,
+html.cb-motion .cb-clipRow--dropAfter::after {
+  transition: opacity var(--cb-motion-duration-fast) ease;
+}
+
+/* Row hover dock + text fade */
+html.cb-motion .cb-clipRowActionsDock {
+  transition:
+    opacity var(--cb-motion-duration-normal) var(--cb-motion-ease-out),
+    visibility var(--cb-motion-duration-normal),
+    transform var(--cb-motion-duration-normal) var(--cb-motion-ease-out);
+  transform: translate(6px, -50%);
+}
+
+html.cb-motion .cb-clipRow:hover .cb-clipRowActionsDock,
+html.cb-motion .cb-clipRow--edit .cb-clipRowActionsDock {
+  transform: translate(0, -50%);
+}
+
+html.cb-motion .cb-clipRowActionsFade {
+  transition: opacity var(--cb-motion-duration-normal) var(--cb-motion-ease-out);
+}
+
+/* List items — only when a view loads with content (class set in popup.js) */
+html.cb-motion .cb-motion-list-enter .cb-clipRow {
+  animation: cb-motion-item-in var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-list-enter .cb-clipRow:nth-child(1) { animation-delay: 0ms; }
+html.cb-motion .cb-motion-list-enter .cb-clipRow:nth-child(2) { animation-delay: 30ms; }
+html.cb-motion .cb-motion-list-enter .cb-clipRow:nth-child(3) { animation-delay: 60ms; }
+html.cb-motion .cb-motion-list-enter .cb-clipRow:nth-child(4) { animation-delay: 90ms; }
+html.cb-motion .cb-motion-list-enter .cb-clipRow:nth-child(5) { animation-delay: 120ms; }
+html.cb-motion .cb-motion-list-enter .cb-clipRow:nth-child(n+6) { animation-delay: 120ms; }
+
+html.cb-motion .cb-motion-list-enter.cb-container--empty .cb-emptyState {
+  animation: cb-motion-item-in var(--cb-motion-duration-slow) var(--cb-motion-ease-out) both;
+}
+
+/* Search filtering reflows — no enter animation (avoids overflow flicker) */
+html.cb-motion .cb-searchContainer .cb-clipRow,
+html.cb-motion .cb-searchContainer .cb-emptyState {
+  animation: none !important;
+}
+
+/* Add / Search composer — stacked actions below input */
+html.cb-motion .cb-composerActionsWrap {
+  transition: grid-template-rows var(--cb-motion-composer-duration) var(--cb-motion-ease-composer);
+}
+
+html.cb-motion .cb-composer--search .cb-composerActionsWrap {
+  transition-delay: 0.06s;
+}
+
+html.cb-motion .cb-composer--default .cb-composerActionsWrap {
+  transition-delay: 0.14s;
+}
+
+html.cb-motion .cb-composerActionsInner {
+  transform-origin: top center;
+  opacity: 0;
+  filter: blur(8px);
+  transform: scale(0.92) translateY(8px);
+  transition:
+    opacity var(--cb-motion-composer-duration) var(--cb-motion-ease-composer),
+    filter var(--cb-motion-composer-duration) var(--cb-motion-ease-composer),
+    transform var(--cb-motion-composer-duration) var(--cb-motion-ease-spring);
+}
+
+html.cb-motion .cb-composer--search .cb-composerActionsInner {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1) translateY(0);
+  transition-delay: 0.1s;
+}
+
+html.cb-motion .cb-composer--default .cb-composerActionsInner {
+  transition-delay: 0s;
+}
+
+html.cb-motion .cb-composer--default .cb-addCategoriesSlot,
+html.cb-motion .cb-composer--search .cb-addCategoriesSlot {
+  overflow: visible;
+  max-width: 148px;
+  opacity: 1;
+  margin-left: 0;
+  transition:
+    max-width var(--cb-motion-composer-duration) var(--cb-motion-ease-composer),
+    opacity calc(var(--cb-motion-composer-duration) * 0.75) var(--cb-motion-ease-composer),
+    margin-left var(--cb-motion-composer-duration) var(--cb-motion-ease-composer);
+}
+
+html.cb-motion .cb-composer--search .cb-addCategoriesSlot {
+  max-width: 0;
+  opacity: 0;
+  margin-left: calc(-1 * var(--cb-space-8));
+  transition-delay: 0s;
+}
+
+html.cb-motion .cb-composer--default .cb-addCategoriesSlot {
+  transition-delay: 0.08s;
+}
+
+html.cb-motion .cb-composer--default .cb-addCategoriesBtn,
+html.cb-motion .cb-composer--search .cb-addCategoriesBtn {
+  display: flex;
+  transform-origin: center;
+  filter: blur(0);
+  transform: scale(1);
+  transition:
+    opacity calc(var(--cb-motion-composer-duration) * 0.75) var(--cb-motion-ease-composer),
+    filter var(--cb-motion-composer-duration) var(--cb-motion-ease-composer),
+    transform var(--cb-motion-composer-duration) var(--cb-motion-ease-spring);
+}
+
+html.cb-motion .cb-composer--search .cb-addCategoriesBtn {
+  opacity: 0;
+  filter: blur(6px);
+  transform: scale(0.86);
+  pointer-events: none;
+  transition-delay: 0s;
+}
+
+html.cb-motion .cb-composer--default .cb-addCategoriesBtn {
+  transition-delay: 0.08s;
+}
+
+html.cb-motion .cb-composerPrompt .cb-searchInput,
+html.cb-motion .cb-composerPrompt .cb-subRowButton {
+  transition:
+    opacity calc(var(--cb-motion-composer-duration) * 0.8) var(--cb-motion-ease-composer),
+    filter var(--cb-motion-composer-duration) var(--cb-motion-ease-composer),
+    transform var(--cb-motion-composer-duration) var(--cb-motion-ease-spring);
+}
+
+html.cb-motion .cb-composer--default .cb-searchInput {
+  filter: blur(4px);
+  transform: scale(0.97);
+}
+
+html.cb-motion .cb-composer--search .cb-searchInput {
+  filter: blur(0);
+  transform: scale(1);
+  transition-delay: 0.06s;
+}
+
+html.cb-motion .cb-composer--search .cb-subRowButton {
+  filter: blur(5px);
+  transform: scale(0.95);
+}
+
+html.cb-motion .cb-subRowText {
+  transition: color var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-composer--search .cb-subRowText {
+  color: var(--cb-color-text);
+}
+
+html.cb-motion .cb-composerActionsInner .cb-actionsRow > * {
+  opacity: 0;
+  filter: blur(4px);
+  transform: translateY(6px) scale(0.96);
+  transition:
+    opacity calc(var(--cb-motion-composer-duration) * 0.85) var(--cb-motion-ease-composer),
+    filter var(--cb-motion-composer-duration) var(--cb-motion-ease-composer),
+    transform var(--cb-motion-composer-duration) var(--cb-motion-ease-spring);
+}
+
+html.cb-motion .cb-composer--search .cb-composerActionsInner .cb-categoryPicker {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+  transition-delay: 0.16s;
+}
+
+html.cb-motion .cb-composer--search .cb-composerActionsInner .cb-actionBtns {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+  transition-delay: 0.22s;
+}
+
+html.cb-motion .cb-composer--default .cb-composerActionsInner .cb-actionsRow > * {
+  transition-delay: 0s;
+}
+
+/* Modals */
+html.cb-motion .cb-deleteDialogOverlay {
+  animation: cb-motion-fade-in var(--cb-motion-duration-normal) ease both;
+}
+
+html.cb-motion .cb-deleteDialog {
+  animation: cb-motion-scale-in var(--cb-motion-duration-normal) var(--cb-motion-ease-spring) both;
+}
+
+/* Dropdown menus */
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) {
+  animation: cb-motion-menu-in var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+  transform-origin: top center;
+}

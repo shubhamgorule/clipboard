@@ -16,8 +16,8 @@
 
 :root{
   --cb-color-text: #1a1a1a;
-  --cb-color-muted: #808080;
-  --cb-color-row: #666666;
+  --cb-color-muted: #999999;
+  --cb-color-row: var(--cb-color-muted);
   --cb-color-border: rgba(0,0,0,0.15);
   --cb-color-pill: #f0f0f0;
   --cb-color-pill-pressed: #e6e6e6;
@@ -26,12 +26,20 @@
   --cb-icon-color: #1a1a1a;
   --cb-icon-color-hover: #1a1a1a;
   --cb-color-danger: #e53935;
+  --cb-color-danger-hover: #d32f2f;
+  --cb-color-danger-pressed: #c62828;
   --cb-color-danger-bg: #fdeaea;
   --cb-color-danger-bg-pressed: #fcd5d5;
+
+  /* Shell (3008:7919) */
+  --cb-w: 400px;
+  --cb-h: 600px;
+  --cb-radius: 24px;
 
   /* Figma spacing (3008:7919 / 3008:7462 / 3008:7002) */
   --cb-space-4: 4px;
   --cb-space-8: 8px;
+  --cb-space-10: 10px;
   --cb-space-12: 12px;
   --cb-space-16: 16px;
   --cb-pad-x: 16px;
@@ -48,8 +56,17 @@
   --cb-dock-pad: 4px;
   --cb-dock-radius: 14px;
   --cb-dock-right: 16px;
+  --cb-row-pad-x: var(--cb-pad-x);
+  --cb-row-pad-right: var(--cb-row-pad-x);
   --cb-pill-w: 72px;
   --cb-pill-py: 4px;
   --cb-pill-px: 12px;
+
+  /* Motion tokens (used by ui/styles/motion.css when html.cb-motion is set) */
+  --cb-motion-duration-fast: 0.14s;
+  --cb-motion-duration-normal: 0.22s;
+  --cb-motion-duration-slow: 0.32s;
+  --cb-motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --cb-motion-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 

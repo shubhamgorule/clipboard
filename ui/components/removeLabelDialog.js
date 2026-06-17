@@ -1,9 +1,15 @@
 import { createIconButton } from "./iconButton.js";
 
 /**
- * Figma source: 3025:7929 (Delete confirmation dialog)
+ * Confirm removing a category. Clips are moved to Uncategorized.
+ * Figma source: 3025:7929 (button layout only)
  */
-export function createDeleteDialog({ onDelete, onKeep } = {}) {
+export function createRemoveLabelDialog({
+  label,
+  itemCount = 0,
+  onCancel,
+  onDeleteCategory
+} = {}) {
   const overlay = document.createElement("div");
   overlay.className = "cb-deleteDialogOverlay";
   overlay.setAttribute("role", "presentation");
@@ -13,7 +19,7 @@ export function createDeleteDialog({ onDelete, onKeep } = {}) {
   dialog.className = "cb-deleteDialog";
   dialog.setAttribute("role", "alertdialog");
   dialog.setAttribute("aria-modal", "true");
-  dialog.setAttribute("aria-labelledby", "cb-deleteDialogTitle");
+  dialog.setAttribute("aria-labelledby", "cb-removeLabelDialogTitle");
 
   const body = document.createElement("div");
   body.className = "cb-deleteDialogBody";
@@ -34,12 +40,22 @@ export function createDeleteDialog({ onDelete, onKeep } = {}) {
   iconWrap.appendChild(iconRoot);
 
   const title = document.createElement("p");
-  title.id = "cb-deleteDialogTitle";
+  title.id = "cb-removeLabelDialogTitle";
   title.className = "cb-deleteDialogTitle";
-  title.textContent = "Are you sure you want to delete?";
+  title.textContent = `Delete "${label}"?`;
 
   body.appendChild(iconWrap);
   body.appendChild(title);
+
+  if (itemCount > 0) {
+    const subtitle = document.createElement("p");
+    subtitle.className = "cb-deleteDialogSubtitle";
+    subtitle.textContent =
+      itemCount === 1
+        ? "1 text item will be moved to Uncategorized."
+        : `${itemCount} text items will be moved to Uncategorized.`;
+    body.appendChild(subtitle);
+  }
 
   const actions = document.createElement("div");
   actions.className = "cb-deleteDialogActions";
@@ -50,7 +66,7 @@ export function createDeleteDialog({ onDelete, onKeep } = {}) {
   keep.textContent = "Keep";
   keep.addEventListener("click", (e) => {
     e.stopPropagation();
-    onKeep?.();
+    onCancel?.();
   });
 
   const del = document.createElement("button");
@@ -59,7 +75,7 @@ export function createDeleteDialog({ onDelete, onKeep } = {}) {
   del.textContent = "Delete";
   del.addEventListener("click", (e) => {
     e.stopPropagation();
-    onDelete?.();
+    onDeleteCategory?.();
   });
 
   actions.appendChild(keep);
@@ -69,13 +85,13 @@ export function createDeleteDialog({ onDelete, onKeep } = {}) {
   overlay.appendChild(dialog);
 
   overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) onKeep?.();
+    if (e.target === overlay) onCancel?.();
   });
 
   overlay.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       e.preventDefault();
-      onKeep?.();
+      onCancel?.();
     }
   });
 
