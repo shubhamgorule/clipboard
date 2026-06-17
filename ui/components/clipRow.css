@@ -1,0 +1,68 @@
+.cb-clipRow{
+  width: 400px;
+  height: 36px;
+  padding: 12px 16px;
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  position: relative;
+}
+
+.cb-clipRowText{
+  flex: 1 0 0;
+  min-width: 1px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cb-color-row);
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cb-clipRow--hover .cb-clipRowText,
+.cb-clipRow:hover .cb-clipRowText{
+  color: var(--cb-color-text);
+}
+
+/* Default state: hidden fade */
+.cb-clipRowActionsFade{
+  position:absolute;
+  inset: 0 0 0 auto;
+  height: 100%;
+  display:flex;
+  align-items:center;
+  padding-left: 32px;
+  opacity: 0;
+  pointer-events:none;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, #ffffff 20.917%, #ffffff 100%);
+  box-shadow: 0px 0px 32px 0px #ffffff;
+}
+
+.cb-clipRow:hover .cb-clipRowActionsFade{
+  opacity: 1;
+  pointer-events:auto;
+}
+
+/* Hover/Edit dock (Frame100/Variant3) */
+.cb-clipRowActionsDock{
+  position:absolute;
+  right: 16px;
+  top: 4px;
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid var(--cb-color-border);
+  border-radius: 14px;
+  box-shadow: var(--cb-shadow-action);
+}
+
+/* Default shows fade; hover/edit shows dock container */
+.cb-clipRowActionsDock{ display:none; }
+.cb-clipRow:hover .cb-clipRowActionsDock{ display:flex; }
+.cb-clipRow--edit .cb-clipRowActionsDock{ display:flex; }
+.cb-clipRow--edit .cb-clipRowActionsFade{ display:none; }
+

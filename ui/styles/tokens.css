@@ -1,0 +1,10 @@
+:root{
+  --cb-color-text: #1a1a1a;
+  --cb-color-muted: #808080;
+  --cb-color-row: #666666;
+  --cb-color-border: rgba(0,0,0,0.15);
+  --cb-color-pill: #f0f0f0;
+  --cb-color-pill-pressed: #e6e6e6;
+  --cb-shadow-action: 0px 4px 8px rgba(0,0,0,0.13);
+}
+

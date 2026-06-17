@@ -1,0 +1,27 @@
+.cb-iconButton{
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 0;
+  background: rgba(240,240,240,0);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor: pointer;
+}
+
+.cb-iconButton:hover{
+  background: var(--cb-color-pill);
+}
+
+.cb-iconButton:active{
+  background: var(--cb-color-pill-pressed);
+}
+
+.cb-iconButtonIcon{
+  width: 24px;
+  height: 24px;
+  display:block;
+}
+
