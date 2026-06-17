@@ -17,14 +17,28 @@ import {
 
 const app = document.getElementById("app");
 
+const ICONS = {
+  settings: "./assets/settings.png",
+  add: "./assets/add.png",
+  search: "./assets/search.png",
+  reorder: "./assets/reorder.png",
+  copy: "./assets/copy.png",
+  edit: "./assets/edit.png",
+  trash: "./assets/trash.png",
+  refresh: "./assets/refresh.png",
+  check: "./assets/check.png",
+  close: "./assets/close.png"
+};
+
 const state = {
   data: null,
   settings: null,
-  activeCategoryId: "general",
+  activeCategoryId: "all",
   view: "main", // 'main' | 'settings'
   query: "",
   ghost: "",
   addOpen: false,
+  editingItemId: null,
   addDraft: {
     content: "",
     label: "",
@@ -46,20 +60,11 @@ function el(tag, attrs = {}, children = []) {
   return n;
 }
 
-function svgIcon(pathD) {
-  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  s.setAttribute("width", "16");
-  s.setAttribute("height", "16");
-  s.setAttribute("viewBox", "0 0 24 24");
-  s.setAttribute("fill", "none");
-  s.setAttribute("stroke", "currentColor");
-  s.setAttribute("stroke-width", "2");
-  s.setAttribute("stroke-linecap", "round");
-  s.setAttribute("stroke-linejoin", "round");
-  const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  p.setAttribute("d", pathD);
-  s.appendChild(p);
-  return s;
+function icon(src, alt = "") {
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = alt;
+  return img;
 }
 
 function toast(msg) {
@@ -111,7 +116,10 @@ function currentItems() {
   if (!data) return [];
 
   const scope = state.settings?.searchScope ?? "category";
-  const items = scope === "all" ? listItemsForCategory(data, null) : listItemsForCategory(data, state.activeCategoryId);
+  const items =
+    state.activeCategoryId === "all" || scope === "all"
+      ? listItemsForCategory(data, null)
+      : listItemsForCategory(data, state.activeCategoryId);
   const filtered = filterItems(items, state.query);
   state.ghost = computeGhostHint(filtered, state.query);
   return filtered;
@@ -130,15 +138,6 @@ function setActiveCategory(id) {
 }
 
 function header() {
-  const addBtn = el(
-    "button",
-    {
-      class: "iconBtn",
-      title: "Add",
-      onClick: () => openAdd()
-    },
-    [svgIcon("M12 5v14M5 12h14")]
-  );
   const settingsBtn = el(
     "button",
     {
@@ -149,19 +148,20 @@ function header() {
         render();
       }
     },
-    [svgIcon("M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 3.4 17l.06-.06A1.65 1.65 0 0 0 3.79 15a1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8.99a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 6.04 4.3l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 0 1 20.6 7l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .66.39 1.26 1 1.51.3.12.63.18.97.18H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z")]
+    [icon(ICONS.settings, "Settings")]
   );
 
   return el("div", { class: "header" }, [
     el("div", { class: "title", text: "Clipboard" }),
-    el("div", { class: "headerActions" }, [addBtn, settingsBtn])
+    el("div", { class: "headerActions" }, [settingsBtn])
   ]);
 }
 
 function tabs() {
   const cats = getCategories();
+  const top = [{ id: "all", name: "All" }, ...cats];
 
-  const nodes = cats.map((c) =>
+  const nodes = top.map((c) =>
     el(
       "button",
       {
@@ -173,22 +173,6 @@ function tabs() {
     )
   );
 
-  const addCatBtn = el(
-    "button",
-    {
-      class: "tab",
-      title: "Add category",
-      onClick: async () => {
-        const name = window.prompt("Category name");
-        if (!name) return;
-        await addCategory(name);
-        await refresh();
-      }
-    },
-    [document.createTextNode("+")]
-  );
-
-  nodes.push(addCatBtn);
   return el("div", { class: "tabs" }, nodes);
 }
 
@@ -196,7 +180,7 @@ function toolbar() {
   const search = el("input", {
     id: "search",
     class: "search",
-    placeholder: "Search…",
+    placeholder: "Search",
     value: state.query,
     onInput: (e) => {
       state.query = e.target.value;
@@ -206,6 +190,10 @@ function toolbar() {
       if (e.key === "Tab" && state.settings?.tabAssist !== false && state.ghost) {
         e.preventDefault();
         state.query = state.query + state.ghost;
+        render();
+      }
+      if (e.key === "Escape") {
+        state.query = "";
         render();
       }
     }
@@ -218,67 +206,75 @@ function toolbar() {
 
   const add = el(
     "button",
-    { class: "primaryBtn", onClick: () => openAdd() },
-    [document.createTextNode("Add")]
+    { class: "primaryBtn", title: "Add", onClick: () => openAdd() },
+    [icon(ICONS.add, "Add")]
   );
 
-  return el("div", { class: "toolbar" }, [el("div", { class: "searchWrap" }, [search, ghost]), add]);
+  return el("div", { class: "toolbar" }, [
+    el("div", { class: "searchWrap" }, [search, el("img", { class: "searchIcon", src: ICONS.search, alt: "" }), ghost]),
+    add
+  ]);
 }
 
 function row(it, allIdsInOrder) {
-  const label = it.label?.trim() || (it.contentType === "email" ? "Email" : it.contentType === "link" ? "Link" : "Text");
+  const isEditing = state.editingItemId === it.id;
 
-  const copyBtn = el(
-    "button",
-    {
-      class: "miniBtn",
-      title: "Copy",
-      onClick: async (e) => {
-        e.stopPropagation();
-        const ok = await copyToClipboard(it.content);
-        if (ok) {
-          toast("Copied");
-          await incrementUsage(it.id);
-          await refresh();
-        } else {
-          toast("Copy failed");
-        }
-      }
-    },
-    [svgIcon("M8 7h11v14H8zM5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1")]
-  );
+  const dockBtn = (title, imgSrc, onClick, extra = {}) =>
+    el(
+      "button",
+      {
+        class: "miniBtn",
+        title,
+        onClick: (e) => {
+          e.stopPropagation();
+          onClick(e);
+        },
+        ...extra
+      },
+      [icon(imgSrc, title)]
+    );
 
-  const delBtn = el(
-    "button",
-    {
-      class: "miniBtn miniBtnDanger",
-      title: "Delete",
-      onClick: async (e) => {
-        e.stopPropagation();
-        await deleteItem(it.id);
-        toast("Deleted");
-        await refresh();
-      }
-    },
-    [svgIcon("M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6")]
-  );
+  const copyBtn = dockBtn("Copy", ICONS.copy, async () => {
+    const ok = await copyToClipboard(it.content);
+    if (ok) {
+      toast("Copied");
+      await incrementUsage(it.id);
+      await refresh();
+    } else {
+      toast("Copy failed");
+    }
+  });
 
-  const dragBtn = el(
-    "button",
+  const editBtn = dockBtn("Edit", ICONS.edit, async () => {
+    state.editingItemId = it.id;
+    render();
+  });
+
+  const delBtn = dockBtn("Delete", ICONS.trash, async () => {
+    await deleteItem(it.id);
+    toast("Deleted");
+    await refresh();
+  });
+
+  const dragBtn = dockBtn(
+    "Reorder",
+    ICONS.reorder,
+    () => {},
     {
-      class: "miniBtn drag",
-      title: "Reorder",
       draggable: "true",
       onDragstart: (e) => {
         e.dataTransfer.setData("text/plain", it.id);
         e.dataTransfer.effectAllowed = "move";
-      },
-      onClick: (e) => e.stopPropagation()
-    },
-    [svgIcon("M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01")]
+      }
+    }
   );
 
-  const actions = el("div", { class: "rowActions" }, [copyBtn, dragBtn, delBtn]);
+  const dock = el("div", { class: "rowActionsDock" }, isEditing ? [el("div", { style: "display:flex;gap:8px" }, [dockBtn("Refresh", ICONS.refresh, () => {}), dockBtn("Confirm", ICONS.check, async () => {
+    state.editingItemId = null;
+    render();
+  })])] : [copyBtn, editBtn, delBtn, dragBtn]);
+
+  const fade = el("div", { class: "rowActionsFade" }, [dock]);
 
   const n = el(
     "div",
@@ -307,18 +303,24 @@ function row(it, allIdsInOrder) {
         if (from < 0 || to < 0) return;
         ids.splice(from, 1);
         ids.splice(to, 0, draggedId);
-        await reorderItems(state.activeCategoryId, ids);
+        await reorderItems(it.categoryId, ids);
         await refresh();
       }
     },
     [
       el("div", { class: "rowMain" }, [
-        el("div", { class: "rowLabel", text: label }),
-        el("div", { class: "rowContent", text: it.content })
+        el("div", { class: "rowLabel", text: it.content })
       ]),
-      actions
+      fade
     ]
   );
+
+  n.addEventListener("mouseenter", () => {
+    n.querySelector(".rowLabel")?.classList.add("rowHoverText");
+  });
+  n.addEventListener("mouseleave", () => {
+    n.querySelector(".rowLabel")?.classList.remove("rowHoverText");
+  });
 
   return n;
 }
@@ -481,7 +483,7 @@ function openAdd() {
   state.addDraft = {
     content: "",
     label: "",
-    categoryId: state.activeCategoryId || "general",
+    categoryId: state.activeCategoryId === "all" ? "general" : state.activeCategoryId || "general",
     categoryTouched: false,
     labelTouched: false
   };
@@ -619,9 +621,12 @@ function render() {
   const focus = captureFocus();
 
   app.replaceChildren(
-    el("div", { class: "card" }, [
-      header(),
-      state.view === "settings" ? settingsView() : el("div", {}, [tabs(), toolbar(), listView()])
+    el("div", { class: "surfaceOuter" }, [
+      el("div", { class: "surfaceInner" }, [
+        header(),
+        el("div", { class: "subHeader" }, [el("div", { class: "subHeaderText", text: "Add / Search" })]),
+        state.view === "settings" ? settingsView() : el("div", {}, [tabs(), toolbar(), listView()])
+      ])
     ])
   );
 
@@ -659,8 +664,8 @@ async function refresh() {
   state.data = await getData();
   state.settings = await getSettings();
   const cats = getCategories();
-  if (!cats.find((c) => c.id === state.activeCategoryId)) {
-    state.activeCategoryId = cats[0]?.id ?? "general";
+  if (state.activeCategoryId !== "all" && !cats.find((c) => c.id === state.activeCategoryId)) {
+    state.activeCategoryId = "all";
   }
   render();
 }
