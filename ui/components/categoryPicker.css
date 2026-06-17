@@ -1,0 +1,111 @@
+.cb-categoryPicker{
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cb-categoryPickerTrigger{
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--cb-category-picker-h, 32px);
+  min-height: var(--cb-category-picker-h, 32px);
+  padding: 0 12px;
+  border: 1px solid var(--cb-color-border);
+  border-radius: var(--cb-category-picker-radius, 9999px);
+  background: #fff;
+  cursor: pointer;
+  color: var(--cb-color-text);
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.cb-categoryPickerTrigger:hover,
+.cb-categoryPickerTrigger[aria-expanded="true"]{
+  background: var(--cb-color-pill);
+  border-color: transparent;
+}
+
+.cb-categoryPickerLabel{
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cb-categoryPickerChevron{
+  width: 16px;
+  height: 16px;
+  color: var(--cb-color-muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.cb-categoryPickerTrigger[aria-expanded="true"] .cb-categoryPickerChevron{
+  transform: rotate(180deg);
+}
+
+.cb-categoryPickerMenu{
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  min-width: 196px;
+  padding: var(--cb-space-4);
+  border: 1px solid var(--cb-color-border);
+  border-radius: var(--cb-space-12);
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.cb-categoryPickerOption{
+  width: 100%;
+  border: 0;
+  border-radius: var(--cb-space-8);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cb-space-12);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cb-categoryPickerOption:hover{
+  background: var(--cb-color-pill);
+}
+
+.cb-categoryPickerOption--selected{
+  background: var(--cb-color-pill);
+}
+
+.cb-categoryPickerOptionLabel{
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cb-color-text);
+}
+
+.cb-categoryPickerOptionCheck{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--cb-color-text);
+  flex-shrink: 0;
+}
+
+.cb-categoryPickerOptionCheck[hidden]{
+  display: none;
+}
+
+.cb-categoryPickerCheck{
+  width: 16px;
+  height: 16px;
+}

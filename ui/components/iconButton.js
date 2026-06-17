@@ -8,6 +8,8 @@ const ICON_PATH = {
   "solar:pen-2-linear": "assets/solar__pen-2-linear.svg",
   "material-symbols:check-rounded": "assets/material-symbols__check-rounded.svg",
   "material-symbols:close-rounded": "assets/material-symbols__close-rounded.svg",
+  "material-symbols:arrow-back-rounded": "assets/material-symbols__arrow-back-rounded.svg",
+  "material-symbols:chevron-right-rounded": "assets/material-symbols__chevron-right-rounded.svg",
   "material-symbols:refresh-rounded": "assets/material-symbols__refresh-rounded.svg"
 };
 

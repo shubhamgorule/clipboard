@@ -11,36 +11,89 @@
 }
 
 .cb-deleteDialog{
-  width: 100%;
-  max-width: 280px;
-  padding: var(--cb-space-16);
+  width: 240px;
+  max-width: calc(100% - 32px);
+  padding: var(--cb-space-8);
   display: flex;
   flex-direction: column;
-  gap: var(--cb-space-16);
+  gap: var(--cb-space-8);
+  align-items: center;
   background: #fff;
-  border: 1px solid var(--cb-color-border);
   border-radius: var(--cb-space-16);
-  box-shadow: var(--cb-shadow-action);
+}
+
+.cb-deleteDialogBody{
+  width: 100%;
+  padding: var(--cb-space-16) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cb-space-12);
+  align-items: center;
+  justify-content: center;
+}
+
+.cb-deleteDialogIcon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cb-deleteDialogIcon .cb-iconButton{
+  background: var(--cb-color-danger-bg);
+  color: var(--cb-color-danger);
+  cursor: default;
+  pointer-events: none;
+}
+
+.cb-deleteDialogIcon .cb-iconButton:disabled{
+  opacity: 1;
 }
 
 .cb-deleteDialogTitle{
   margin: 0;
-  font-size: 15px;
-  line-height: 20px;
+  width: 100%;
+  font-size: 16px;
+  line-height: 22px;
   font-weight: 600;
   color: var(--cb-color-text);
+  text-align: center;
+  word-break: break-word;
+}
+
+.cb-deleteDialogSubtitle{
+  margin: 0;
+  width: 100%;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--cb-color-muted);
   text-align: center;
 }
 
 .cb-deleteDialogActions{
   display: flex;
   gap: var(--cb-space-8);
-  justify-content: center;
   width: 100%;
+}
+
+.cb-deleteDialogBtn{
+  flex: 1 0 0;
+  min-width: 0;
+  width: auto;
+  min-height: 32px;
+  height: 32px;
 }
 
 .cb-pillBtnDelete{
   background: var(--cb-color-danger);
   border: 0;
   color: #fff;
+}
+
+.cb-pillBtnDelete:hover{
+  background: var(--cb-color-danger-hover);
+}
+
+.cb-pillBtnDelete:active{
+  background: var(--cb-color-danger-pressed);
 }

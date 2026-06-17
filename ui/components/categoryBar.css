@@ -1,0 +1,64 @@
+.cb-categoriesWrap{
+  position: relative;
+  flex-shrink: 0;
+  padding: var(--cb-pad-y) 0;
+}
+
+.cb-categoriesScroller{
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 var(--cb-pad-x);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cb-categoriesScroller::-webkit-scrollbar{
+  display: none;
+}
+
+.cb-categories{
+  display:flex;
+  gap: var(--cb-space-8);
+  align-items:center;
+  width: max-content;
+  min-width: 100%;
+}
+
+.cb-categoryChip{
+  height: var(--cb-tab-h);
+  border-radius: var(--cb-space-12);
+  padding: 0 var(--cb-tab-px);
+  border: 0;
+  background: rgba(222,222,222,0);
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink: 0;
+}
+
+.cb-categoryChipText{
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--cb-color-muted);
+  white-space: nowrap;
+}
+
+.cb-categoryChip p{
+  margin: 0;
+}
+
+.cb-categoryChipActive{
+  background: var(--cb-color-pill);
+}
+
+.cb-categoryChip:hover .cb-categoryChipText,
+.cb-categoryChip:focus-visible .cb-categoryChipText{
+  color: var(--cb-color-text);
+}
+
+.cb-categoryChipActive .cb-categoryChipText{
+  color: var(--cb-color-text);
+}
