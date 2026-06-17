@@ -1,16 +1,19 @@
 .cb-clipRow{
-  width: 400px;
-  height: 36px;
-  padding: 12px 16px;
+  width: 100%;
+  height: var(--cb-row-h);
+  min-height: var(--cb-row-h);
+  padding: 0 var(--cb-pad-x);
   display:flex;
   align-items:center;
-  gap: 8px;
+  gap: var(--cb-space-8);
   position: relative;
+  flex-shrink: 0;
 }
 
 .cb-clipRowText{
   flex: 1 0 0;
   min-width: 1px;
+  margin: 0;
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
@@ -21,8 +24,8 @@
   text-overflow: ellipsis;
 }
 
-.cb-clipRow--hover .cb-clipRowText,
-.cb-clipRow:hover .cb-clipRowText{
+.cb-clipRow--hover .cb-clipRowText:not(.cb-clipRowText--search),
+.cb-clipRow:hover .cb-clipRowText:not(.cb-clipRowText--search){
   color: var(--cb-color-text);
 }
 
@@ -40,29 +43,60 @@
   box-shadow: 0px 0px 32px 0px #ffffff;
 }
 
-.cb-clipRow:hover .cb-clipRowActionsFade{
-  opacity: 1;
-  pointer-events:auto;
-}
-
-/* Hover/Edit dock (Frame100/Variant3) */
+/* Hover/Edit dock (3008:7462 Hover) */
 .cb-clipRowActionsDock{
   position:absolute;
-  right: 16px;
-  top: 4px;
+  right: var(--cb-dock-right);
+  top: 0;
+  height: var(--cb-row-h);
   display:flex;
   align-items:center;
-  gap: 8px;
-  padding: 4px;
+  gap: var(--cb-space-4);
+  padding: var(--cb-dock-pad);
+  box-sizing: border-box;
   background: #ffffff;
   border: 1px solid var(--cb-color-border);
-  border-radius: 14px;
+  border-radius: var(--cb-dock-radius);
   box-shadow: var(--cb-shadow-action);
+  overflow: visible;
+  z-index: 5;
 }
 
-/* Default shows fade; hover/edit shows dock container */
 .cb-clipRowActionsDock{ display:none; }
 .cb-clipRow:hover .cb-clipRowActionsDock{ display:flex; }
 .cb-clipRow--edit .cb-clipRowActionsDock{ display:flex; }
-.cb-clipRow--edit .cb-clipRowActionsFade{ display:none; }
 
+.cb-clipRowText--search{
+  color: var(--cb-color-row);
+}
+
+.cb-clipRowTextMuted{
+  color: var(--cb-color-row);
+}
+
+.cb-clipRowTextMatch{
+  color: var(--cb-color-text);
+}
+
+.cb-clipRowEditInput{
+  flex: 1 0 0;
+  min-width: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cb-color-text);
+  background: transparent;
+  font-family: inherit;
+}
+
+.cb-clipRow--dragging{
+  opacity: 0.45;
+}
+
+.cb-clipRow--dropTarget{
+  background: var(--cb-color-pill);
+}

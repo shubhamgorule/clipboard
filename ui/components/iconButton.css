@@ -1,27 +1,110 @@
+.cb-iconButtonRoot{
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
 .cb-iconButton{
-  width: 36px;
-  height: 36px;
-  padding: 8px;
-  border-radius: 12px;
+  width: var(--cb-ib-size, var(--cb-ib-md));
+  height: var(--cb-ib-size, var(--cb-ib-md));
+  min-width: var(--cb-ib-size, var(--cb-ib-md));
+  min-height: var(--cb-ib-size, var(--cb-ib-md));
+  padding: var(--cb-ib-pad, var(--cb-ib-md-pad));
+  border-radius: var(--cb-space-12);
   border: 0;
   background: rgba(240,240,240,0);
+  color: var(--cb-icon-color, #1a1a1a);
   display:flex;
   align-items:center;
   justify-content:center;
+  flex-shrink: 0;
+  overflow: hidden;
   cursor: pointer;
+  box-sizing: border-box;
+}
+
+.cb-iconButton--sm{
+  --cb-ib-size: var(--cb-ib-sm);
+  --cb-ib-pad: var(--cb-ib-sm-pad);
+  --cb-ib-icon: var(--cb-ib-sm-icon);
 }
 
 .cb-iconButton:hover{
   background: var(--cb-color-pill);
+  color: var(--cb-icon-color-hover, #1a1a1a);
 }
 
 .cb-iconButton:active{
   background: var(--cb-color-pill-pressed);
+  color: var(--cb-icon-color-hover, #1a1a1a);
+}
+
+.cb-iconButton--danger:hover{
+  background: var(--cb-color-danger-bg);
+  color: var(--cb-color-danger);
+}
+
+.cb-iconButton--danger:active{
+  background: var(--cb-color-danger-bg-pressed);
+  color: var(--cb-color-danger);
+}
+
+.cb-iconButton:disabled{
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cb-iconButton:disabled:hover,
+.cb-iconButton:disabled:active{
+  background: rgba(240,240,240,0);
+  color: var(--cb-icon-color, #1a1a1a);
+}
+
+.cb-iconButton--danger:disabled:hover,
+.cb-iconButton--danger:disabled:active{
+  background: rgba(240,240,240,0);
+  color: var(--cb-icon-color, #1a1a1a);
+}
+
+.cb-iconButtonIconWrap{
+  width: var(--cb-ib-icon, var(--cb-ib-md-icon));
+  height: var(--cb-ib-icon, var(--cb-ib-md-icon));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 .cb-iconButtonIcon{
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
   display:block;
+  flex-shrink: 0;
 }
 
+.cb-iconButtonTooltip{
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--cb-color-text);
+  color: #fff;
+  font-family: var(--cb-font);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.cb-iconButtonRoot:hover .cb-iconButtonTooltip,
+.cb-iconButtonRoot:focus-within .cb-iconButtonTooltip{
+  opacity: 1;
+}

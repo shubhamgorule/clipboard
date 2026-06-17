@@ -1,7 +1,3 @@
-:root{
-  font-family: "Asta Sans", sans-serif;
-}
-
 @font-face{
   font-family: "Asta Sans";
   font-style: normal;
@@ -26,5 +22,34 @@
   --cb-color-pill: #f0f0f0;
   --cb-color-pill-pressed: #e6e6e6;
   --cb-shadow-action: 0px 4px 8px rgba(0,0,0,0.13);
+  --cb-font: "Asta Sans", sans-serif;
+  --cb-icon-color: #1a1a1a;
+  --cb-icon-color-hover: #1a1a1a;
+  --cb-color-danger: #e53935;
+  --cb-color-danger-bg: #fdeaea;
+  --cb-color-danger-bg-pressed: #fcd5d5;
+
+  /* Figma spacing (3008:7919 / 3008:7462 / 3008:7002) */
+  --cb-space-4: 4px;
+  --cb-space-8: 8px;
+  --cb-space-12: 12px;
+  --cb-space-16: 16px;
+  --cb-pad-x: 16px;
+  --cb-pad-y: 12px;
+  --cb-row-h: 36px;
+  --cb-tab-h: 28px;
+  --cb-tab-px: 12px;
+  --cb-ib-md: 36px;
+  --cb-ib-md-pad: 8px;
+  --cb-ib-md-icon: 24px;
+  --cb-ib-sm: 28px;
+  --cb-ib-sm-pad: 6.222px;
+  --cb-ib-sm-icon: 18.667px;
+  --cb-dock-pad: 4px;
+  --cb-dock-radius: 14px;
+  --cb-dock-right: 16px;
+  --cb-pill-w: 72px;
+  --cb-pill-py: 4px;
+  --cb-pill-px: 12px;
 }
 
