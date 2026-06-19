@@ -176,7 +176,7 @@ Full `render()` only for: mode change (default ↔ search), tab change, settings
 - [ ] Repo skeleton (section 2)
 - [ ] `tokens.css` from Figma
 - [ ] Fonts + manifest icons
-- [ ] `storage.js` + empty list persistence
+- [x] `storage.js` + empty list persistence
 - [ ] Static popup shell matching `3008:7919` (empty list)
 
 **Exit:** Reload extension → layout correct, storage empty, no console errors.
@@ -201,7 +201,7 @@ Full `render()` only for: mode change (default ↔ search), tab change, settings
 ### Phase 4 — Settings & polish
 
 - [ ] Settings screen from Figma
-- [ ] Export / import / clear
+- [x] Export / import / clear
 - [ ] Edge cases: long text, empty search, escape to cancel
 
 ---
@@ -272,9 +272,9 @@ chrome://extensions → Load unpacked → this folder
 
 Use this as the **ordered backlog** for Clipboard v1 — not new exploration:
 
-1. Add `shared/storage.js` and wire popup (items still work after reload)
-2. Fix “All” tab to show all categories
-3. Add `detector.js` on add
+1. ~~Add `shared/storage.js` and wire popup (items still work after reload)~~ — done
+2. Fix “All” tab to show all categories — done
+3. ~~Add `detector.js` on add~~ — done
 4. Wire **one** delete confirmation (remove duplicate pattern)
 5. Implement settings from Figma (replace stub)
 6. Manifest toolbar icons

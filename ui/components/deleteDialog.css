@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--cb-pad-x);
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--cb-color-overlay);
 }
 
 .cb-deleteDialog{
@@ -17,7 +17,7 @@
   flex-direction: column;
   gap: var(--cb-space-8);
   align-items: center;
-  background: #fff;
+  background: var(--cb-color-surface-raised);
   border-radius: var(--cb-space-16);
 }
 
@@ -86,7 +86,7 @@
 .cb-pillBtnDelete{
   background: var(--cb-color-danger);
   border: 0;
-  color: #fff;
+  color: var(--cb-color-on-danger);
 }
 
 .cb-pillBtnDelete:hover{
@@ -95,4 +95,13 @@
 
 .cb-pillBtnDelete:active{
   background: var(--cb-color-danger-pressed);
+}
+
+.cb-pillBtnDelete:disabled:hover,
+.cb-pillBtnDelete:disabled:active{
+  background: var(--cb-color-danger);
+}
+
+.cb-pillBtnDelete:focus-visible:not(:disabled){
+  background: var(--cb-color-danger-hover);
 }

@@ -54,6 +54,15 @@
   background: var(--cb-color-pill);
 }
 
+.cb-categoryChip:hover:not(.cb-categoryChipActive),
+.cb-categoryChip:focus-visible:not(.cb-categoryChipActive){
+  background: var(--cb-color-pill);
+}
+
+.cb-categoryChip:active{
+  background: var(--cb-color-pill-pressed);
+}
+
 .cb-categoryChip:hover .cb-categoryChipText,
 .cb-categoryChip:focus-visible .cb-categoryChipText{
   color: var(--cb-color-text);

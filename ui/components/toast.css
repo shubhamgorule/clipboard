@@ -16,8 +16,8 @@
   max-width: calc(var(--cb-w, 400px) - 32px);
   padding: 10px 14px;
   border-radius: 999px;
-  background: var(--cb-color-text);
-  color: #fff;
+  background: var(--cb-color-primary);
+  color: var(--cb-color-on-primary);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
   opacity: 0;
   transform: translateY(14px) scale(0.94);

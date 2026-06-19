@@ -20,7 +20,7 @@
   line-height: 20px;
   font-weight: 550;
   color: var(--cb-color-text);
-  background: #fff;
+  background: var(--cb-color-surface);
   outline: none;
   font-family: inherit;
   box-sizing: border-box;
@@ -31,13 +31,13 @@
 }
 
 .cb-addCategoryDialogInput:focus{
-  border-color: rgba(0, 0, 0, 0.3);
+  border-color: var(--cb-color-input-focus-border);
 }
 
 .cb-addCategoryDialogSubmit{
-  background: var(--cb-color-text);
+  background: var(--cb-color-primary);
   border: 0;
-  color: #fff;
+  color: var(--cb-color-on-primary);
 }
 
 .cb-addCategoryDialogSubmit:disabled{

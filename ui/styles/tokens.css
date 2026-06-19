@@ -21,6 +21,8 @@
   --cb-color-border: rgba(0,0,0,0.15);
   --cb-color-pill: #f0f0f0;
   --cb-color-pill-pressed: #e6e6e6;
+  --cb-color-stroked-btn-hover: #f8f8f8;
+  --cb-color-stroked-btn-pressed: #f2f2f2;
   --cb-shadow-action: 0px 4px 8px rgba(0,0,0,0.13);
   --cb-font: "Asta Sans", sans-serif;
   --cb-icon-color: #1a1a1a;
@@ -30,6 +32,18 @@
   --cb-color-danger-pressed: #c62828;
   --cb-color-danger-bg: #fdeaea;
   --cb-color-danger-bg-pressed: #fcd5d5;
+  --cb-color-primary: #1a1a1a;
+  --cb-color-on-primary: #ffffff;
+  --cb-color-primary-hover: #333333;
+  --cb-color-primary-pressed: #0d0d0d;
+  --cb-color-bg: #ffffff;
+  --cb-color-surface: #ffffff;
+  --cb-color-surface-raised: #ffffff;
+  --cb-color-on-danger: #ffffff;
+  --cb-color-overlay: rgba(0, 0, 0, 0.25);
+  --cb-color-input-focus-border: rgba(0, 0, 0, 0.3);
+  --cb-shadow-menu: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --cb-color-row-fade: #ffffff;
 
   /* Shell (3008:7919) */
   --cb-w: 400px;
@@ -62,6 +76,13 @@
   --cb-pill-w: 72px;
   --cb-pill-py: 4px;
   --cb-pill-px: 12px;
+
+  /* Category picker menu — outer radius = option radius + inset (concentric corners) */
+  --cb-category-picker-menu-pad: var(--cb-space-4);
+  --cb-category-picker-option-radius: var(--cb-space-12);
+  --cb-category-picker-menu-radius: calc(
+    var(--cb-category-picker-option-radius) + var(--cb-category-picker-menu-pad)
+  );
 
   /* Motion tokens (used by ui/styles/motion.css when html.cb-motion is set) */
   --cb-motion-duration-fast: 0.14s;

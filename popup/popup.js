@@ -9,7 +9,10 @@ import { createEmptyState } from "../ui/components/emptyState.js";
 import { createSettingsView } from "../ui/components/settingsView.js";
 import { showToast } from "../ui/components/toast.js";
 import { detectCategory } from "../shared/categoryDetector.js";
-import { loadData, saveData } from "../shared/storage.js";
+import { loadData, saveData, serializeExport } from "../shared/storage.js";
+import { loadPreferences, savePreferences } from "../shared/preferences.js";
+import { applyAppearance, COLOR_MODES, THEMES } from "../shared/themes.js";
+import { newClipId } from "../shared/storageSchema.js";
 
 const UNCATEGORIZED = "Uncategorized";
 const ALL_CATEGORY = "All";
@@ -29,15 +32,25 @@ const state = {
   editCategory: UNCATEGORIZED,
   confirmDeleteId: null,
   confirmRemoveLabel: null,
-  showAddCategoryDialog: false
+  showAddCategoryDialog: false,
+  colorMode: "light",
+  theme: "default"
 };
 
 function $(id) {
   return document.getElementById(id);
 }
 
-function persist() {
-  return saveData({ items: state.items, labels: state.labels });
+async function persist() {
+  try {
+    await saveData({ items: state.items, labels: state.labels });
+  } catch (err) {
+    console.error("Failed to save clipboard data:", err);
+    showToast({
+      message: err?.message || "Could not save. Storage may be full.",
+      tone: "danger"
+    });
+  }
 }
 
 function render({ screenTransition = false, listEnter = false } = {}) {
@@ -305,7 +318,7 @@ function addItem() {
   const qTrimmed = (state.query ?? "").trim();
   if (!qTrimmed) return;
   state.items.unshift({
-    id: String(Date.now()),
+    id: newClipId(),
     category: hasCategories() ? state.addCategory : UNCATEGORIZED,
     text: qTrimmed
   });
@@ -343,6 +356,24 @@ function cancelSearch() {
     return;
   }
   render({ listEnter: true });
+}
+
+function isOutsideComposerDismissTarget(target) {
+  if (!(target instanceof Node)) return false;
+  if (document.querySelector(".cb-composer")?.contains(target)) return false;
+
+  const pickerMenu = document.querySelector(".cb-categoryPickerMenu:not([hidden])");
+  if (pickerMenu?.contains(target)) return false;
+
+  if (target.closest?.(".cb-deleteDialogOverlay")) return false;
+
+  return true;
+}
+
+function onDocumentPointerDown(event) {
+  if (!isSearchActive()) return;
+  if (!isOutsideComposerDismissTarget(event.target)) return;
+  cancelSearch();
 }
 
 async function copyText(text) {
@@ -625,6 +656,19 @@ function confirmRemoveLabel(name) {
   finalizeRemoveLabel(name);
 }
 
+function exportClipboardBackup() {
+  const json = serializeExport({ items: state.items, labels: state.labels });
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().slice(0, 10);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `clipboard-export-${stamp}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+  showToast({ message: "Data exported" });
+}
+
 function fillContainer(container) {
   if (state.mode === "search") {
     container.classList.remove("cb-motion-list-enter");
@@ -847,6 +891,12 @@ function buildHeader() {
 
 function buildSettingsView() {
   return createSettingsView({
+    colorMode: state.colorMode,
+    theme: state.theme,
+    colorModes: COLOR_MODES,
+    themes: THEMES,
+    onColorModeChange: (colorMode) => setAppearance({ colorMode }),
+    onThemeChange: (theme) => setAppearance({ theme }),
     labels: state.labels,
     labelDraft: state.labelDraft,
     showSystemCategories: hasCategories(),
@@ -860,7 +910,8 @@ function buildSettingsView() {
       state.labelDraft = value;
     },
     onAddLabel: addLabel,
-    onRemoveLabel: requestRemoveLabel
+    onRemoveLabel: requestRemoveLabel,
+    onExport: exportClipboardBackup
   });
 }
 
@@ -996,7 +1047,38 @@ function buildListContainer(className) {
   return container;
 }
 
+async function setAppearance({ colorMode, theme } = {}) {
+  if (colorMode !== undefined) state.colorMode = colorMode;
+  if (theme !== undefined) state.theme = theme;
+
+  const applied = applyAppearance({ colorMode: state.colorMode, theme: state.theme });
+  state.colorMode = applied.colorMode;
+  state.theme = applied.theme;
+
+  try {
+    await savePreferences({ colorMode: state.colorMode, theme: state.theme });
+  } catch (err) {
+    console.error("Failed to save appearance preference:", err);
+    showToast({
+      message: "Could not save appearance preference.",
+      tone: "danger"
+    });
+  }
+}
+
 async function init() {
+  document.addEventListener("pointerdown", onDocumentPointerDown, true);
+
+  try {
+    const prefs = await loadPreferences();
+    const applied = applyAppearance({ colorMode: prefs.colorMode, theme: prefs.theme });
+    state.colorMode = applied.colorMode;
+    state.theme = applied.theme;
+  } catch (err) {
+    console.error("Failed to load preferences:", err);
+    applyAppearance({ colorMode: "light", theme: "default" });
+  }
+
   try {
     const data = await loadData();
     state.items = data.items;
