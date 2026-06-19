@@ -1,8 +1,9 @@
 export const PREFERENCES_KEY = "clipboard:preferences";
 export const DEFAULT_COLOR_MODE = "light";
 export const DEFAULT_THEME = "default";
+export const DEFAULT_MOTION_ENABLED = true;
 
-/** @typedef {{ colorMode: string, theme: string }} ClipboardPreferences */
+/** @typedef {{ colorMode: string, theme: string, motionEnabled: boolean }} ClipboardPreferences */
 
 const VALID_COLOR_MODES = new Set(["light", "dark", "system"]);
 const VALID_THEMES = new Set(["default", "warm", "ocean", "forest", "rose", "lavender"]);
@@ -45,27 +46,35 @@ function migrateLegacyPreferences(record) {
 /** @returns {ClipboardPreferences} */
 export function normalizePreferences(stored) {
   if (!stored || typeof stored !== "object") {
-    return { colorMode: DEFAULT_COLOR_MODE, theme: DEFAULT_THEME };
+    return {
+      colorMode: DEFAULT_COLOR_MODE,
+      theme: DEFAULT_THEME,
+      motionEnabled: DEFAULT_MOTION_ENABLED
+    };
   }
 
   const record = /** @type {Record<string, unknown>} */ (stored);
+  const motionEnabled =
+    typeof record.motionEnabled === "boolean"
+      ? record.motionEnabled
+      : DEFAULT_MOTION_ENABLED;
 
   if (typeof record.colorMode === "string") {
     const colorMode = pickValid(record.colorMode, VALID_COLOR_MODES, DEFAULT_COLOR_MODE);
     const theme = pickValid(record.theme, VALID_THEMES, "");
     if (theme) {
-      return { colorMode, theme };
+      return { colorMode, theme, motionEnabled };
     }
 
     const accent = typeof record.accent === "string" ? record.accent.trim() : "";
     if (VALID_THEMES.has(accent)) {
-      return { colorMode, theme: accent };
+      return { colorMode, theme: accent, motionEnabled };
     }
 
-    return { colorMode, theme: DEFAULT_THEME };
+    return { colorMode, theme: DEFAULT_THEME, motionEnabled };
   }
 
-  return migrateLegacyPreferences(record);
+  return { ...migrateLegacyPreferences(record), motionEnabled };
 }
 
 /** @returns {Promise<ClipboardPreferences>} */
@@ -75,7 +84,7 @@ export async function loadPreferences() {
     return normalizePreferences(result[PREFERENCES_KEY]);
   } catch (err) {
     console.warn("Failed to load preferences:", err);
-    return { colorMode: DEFAULT_COLOR_MODE, theme: DEFAULT_THEME };
+    return { colorMode: DEFAULT_COLOR_MODE, theme: DEFAULT_THEME, motionEnabled: DEFAULT_MOTION_ENABLED };
   }
 }
 

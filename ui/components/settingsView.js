@@ -13,9 +13,11 @@ export function createSettingsView({
   labels = [],
   labelDraft = "",
   showSystemCategories = false,
+  motionEnabled = true,
   onBack,
   onClose,
   onLabelDraftChange,
+  onMotionChange,
   onAddLabel,
   onRemoveLabel,
   onExport
@@ -76,8 +78,10 @@ export function createSettingsView({
       theme,
       colorModes,
       themes,
+      motionEnabled,
       onColorModeChange,
-      onThemeChange
+      onThemeChange,
+      onMotionChange
     })
   );
 
@@ -112,11 +116,44 @@ function buildAppearanceSection({
   theme,
   colorModes,
   themes,
+  motionEnabled,
   onColorModeChange,
-  onThemeChange
+  onThemeChange,
+  onMotionChange
 }) {
   const section = document.createElement("section");
   section.className = "cb-settingsSection";
+
+  const motionRow = document.createElement("div");
+  motionRow.className = "cb-settingsToggleRow";
+
+  const motionText = document.createElement("span");
+  motionText.className = "cb-settingsToggleText";
+  motionText.textContent = "Animations";
+
+  const motionLabel = document.createElement("label");
+  motionLabel.className = "cb-settingsToggleLabel";
+
+  const motionInput = document.createElement("input");
+  motionInput.type = "checkbox";
+  motionInput.className = "cb-settingsToggleInput";
+  motionInput.checked = motionEnabled;
+  motionInput.setAttribute("role", "switch");
+  motionInput.setAttribute("aria-checked", motionEnabled ? "true" : "false");
+  motionInput.addEventListener("change", (e) => {
+    const enabled = e.target.checked;
+    motionInput.setAttribute("aria-checked", enabled ? "true" : "false");
+    onMotionChange?.(enabled);
+  });
+
+  const motionTrack = document.createElement("span");
+  motionTrack.className = "cb-settingsToggleTrack";
+  motionTrack.setAttribute("aria-hidden", "true");
+
+  motionLabel.appendChild(motionInput);
+  motionLabel.appendChild(motionTrack);
+  motionRow.appendChild(motionText);
+  motionRow.appendChild(motionLabel);
 
   const modeGroup = document.createElement("div");
   modeGroup.className = "cb-settingsThemeGroup";
@@ -152,11 +189,12 @@ function buildAppearanceSection({
 
   const body = document.createElement("div");
   body.className = "cb-settingsSectionBody cb-settingsSectionBody--themes";
+  body.appendChild(motionRow);
   body.appendChild(modeGroup);
   body.appendChild(themeGroup);
 
   section.appendChild(
-    buildSectionHead("Themes", "Set color mode and theme separately.")
+    buildSectionHead("Appearance", "Color mode, theme, and motion.")
   );
   section.appendChild(body);
 

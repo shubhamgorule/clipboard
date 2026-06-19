@@ -1,9 +1,6 @@
 /*
- * Motion layer (experimental)
- *
- * REVERSIBLE — disable in either way:
- *   1. Remove class="cb-motion" from <html> in popup/index.html
- *   2. Comment out the motion.css <link> in popup/index.html
+ * Motion layer — toggled via Settings → Appearance → Animations.
+ * Controlled by class="cb-motion" on <html> (set from popup.js).
  *
  * All rules are scoped under html.cb-motion so base styles stay unchanged.
  */
@@ -79,9 +76,50 @@ html.cb-motion {
   }
 }
 
-/* Settings ↔ home screen transition only (class set in popup.js) */
+@keyframes cb-motion-item-in-soft {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cb-motion-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Settings ↔ home screen transition (class set in popup.js) */
 html.cb-motion .cb-surfaceInner.cb-motion-screen {
   animation: cb-motion-view-in var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-shell-enter .cb-header,
+html.cb-motion .cb-motion-shell-enter .cb-composer,
+html.cb-motion .cb-motion-shell-enter .cb-categoriesWrap,
+html.cb-motion .cb-motion-shell-enter .cb-container {
+  animation: cb-motion-slide-up var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-shell-enter .cb-composer {
+  animation-delay: 40ms;
+}
+
+html.cb-motion .cb-motion-shell-enter .cb-categoriesWrap {
+  animation-delay: 80ms;
+}
+
+html.cb-motion .cb-motion-shell-enter .cb-container {
+  animation-delay: 120ms;
 }
 
 /* Interactive surfaces */
@@ -101,12 +139,46 @@ html.cb-motion .cb-addCategoriesBtn,
 html.cb-motion .cb-subRowButton,
 html.cb-motion .cb-pillBtn,
 html.cb-motion .cb-categoryPickerTrigger,
-html.cb-motion .cb-categoryPickerOption {
+html.cb-motion .cb-categoryPickerOption,
+html.cb-motion .cb-settingsLabelPill,
+html.cb-motion .cb-settingsLabelInput,
+html.cb-motion .cb-emptyStateAction,
+html.cb-motion .cb-themeOption {
   transition:
     background-color var(--cb-motion-duration-fast) ease,
     border-color var(--cb-motion-duration-fast) ease,
     color var(--cb-motion-duration-fast) ease,
+    opacity var(--cb-motion-duration-fast) ease,
+    transform var(--cb-motion-duration-fast) var(--cb-motion-ease-out);
+}
+
+html.cb-motion .cb-clipRow {
+  transition:
+    background-color var(--cb-motion-duration-fast) ease,
+    box-shadow var(--cb-motion-duration-fast) ease,
+    transform var(--cb-motion-duration-normal) var(--cb-motion-ease-out),
     opacity var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-clipRow.cb-motion-row-enter {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-clipRow--edit .cb-clipRowEditInput {
+  animation: cb-motion-fade-in var(--cb-motion-duration-fast) ease both;
+}
+
+html.cb-motion .cb-clipRow--edit .cb-clipRowDockCategory {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+  animation-delay: 50ms;
+}
+
+html.cb-motion .cb-clipRowEditInput,
+html.cb-motion .cb-searchInput,
+html.cb-motion .cb-addCategoryDialogInput {
+  transition:
+    border-color var(--cb-motion-duration-fast) ease,
+    color var(--cb-motion-duration-fast) ease;
 }
 
 html.cb-motion .cb-clipRowText {
@@ -160,11 +232,101 @@ html.cb-motion .cb-motion-list-enter.cb-container--empty .cb-emptyState {
   animation: cb-motion-item-in var(--cb-motion-duration-slow) var(--cb-motion-ease-out) both;
 }
 
-/* Search filtering reflows — no enter animation (avoids overflow flicker) */
-html.cb-motion .cb-searchContainer .cb-clipRow,
-html.cb-motion .cb-searchContainer .cb-emptyState {
-  animation: none !important;
+html.cb-motion .cb-motion-list-enter .cb-emptyStateCopy {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+  animation-delay: 40ms;
 }
+
+html.cb-motion .cb-motion-list-enter .cb-emptyStateAction {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+  animation-delay: 80ms;
+}
+
+html.cb-motion .cb-motion-list-enter--soft .cb-clipRow,
+html.cb-motion .cb-motion-list-enter--soft .cb-emptyState {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-list-enter--soft .cb-clipRow:nth-child(1) { animation-delay: 0ms; }
+html.cb-motion .cb-motion-list-enter--soft .cb-clipRow:nth-child(2) { animation-delay: 20ms; }
+html.cb-motion .cb-motion-list-enter--soft .cb-clipRow:nth-child(3) { animation-delay: 40ms; }
+html.cb-motion .cb-motion-list-enter--soft .cb-clipRow:nth-child(n+4) { animation-delay: 40ms; }
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsSection {
+  animation: cb-motion-slide-up var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-settings-enter > .cb-header {
+  animation: cb-motion-slide-up var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsContent > .cb-settingsSection:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsContent > .cb-settingsSection:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsContent > .cb-settingsSection:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsToggleRow {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+  animation-delay: 90ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsThemeGroup {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsThemeGroup:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsThemeGroup:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-themeList .cb-themeOption {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-themeList .cb-themeOption:nth-child(1) { animation-delay: 0ms; }
+html.cb-motion .cb-motion-settings-enter .cb-themeList .cb-themeOption:nth-child(2) { animation-delay: 25ms; }
+html.cb-motion .cb-motion-settings-enter .cb-themeList .cb-themeOption:nth-child(3) { animation-delay: 50ms; }
+html.cb-motion .cb-motion-settings-enter .cb-themeList .cb-themeOption:nth-child(4) { animation-delay: 75ms; }
+html.cb-motion .cb-motion-settings-enter .cb-themeList .cb-themeOption:nth-child(n+5) { animation-delay: 75ms; }
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsDataBtn {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+  animation-delay: 60ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsLabelRow {
+  animation: cb-motion-item-in var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsLabelRow:nth-child(1) { animation-delay: 0ms; }
+html.cb-motion .cb-motion-settings-enter .cb-settingsLabelRow:nth-child(2) { animation-delay: 30ms; }
+html.cb-motion .cb-motion-settings-enter .cb-settingsLabelRow:nth-child(3) { animation-delay: 60ms; }
+html.cb-motion .cb-motion-settings-enter .cb-settingsLabelRow:nth-child(4) { animation-delay: 90ms; }
+html.cb-motion .cb-motion-settings-enter .cb-settingsLabelRow:nth-child(n+5) { animation-delay: 90ms; }
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsAddRow {
+  animation: cb-motion-item-in var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+  animation-delay: 120ms;
+}
+
+html.cb-motion .cb-motion-bar-enter .cb-categoryChip {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-motion-bar-enter .cb-categoryChip:nth-child(1) { animation-delay: 0ms; }
+html.cb-motion .cb-motion-bar-enter .cb-categoryChip:nth-child(2) { animation-delay: 25ms; }
+html.cb-motion .cb-motion-bar-enter .cb-categoryChip:nth-child(3) { animation-delay: 50ms; }
+html.cb-motion .cb-motion-bar-enter .cb-categoryChip:nth-child(n+4) { animation-delay: 50ms; }
 
 /* Add / Search composer — stacked actions below input */
 html.cb-motion .cb-composerActionsWrap {
@@ -294,8 +456,56 @@ html.cb-motion .cb-composer--default .cb-composerActionsInner .cb-actionsRow > *
   transition-delay: 0s;
 }
 
+html.cb-motion .cb-categoryPickerChevron {
+  transition: transform var(--cb-motion-duration-fast) var(--cb-motion-ease-out);
+}
+
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+}
+
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(1) { animation-delay: 0ms; }
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(2) { animation-delay: 20ms; }
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(3) { animation-delay: 40ms; }
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(4) { animation-delay: 60ms; }
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(n+5) { animation-delay: 60ms; }
+
+html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerDivider {
+  animation: cb-motion-fade-in var(--cb-motion-duration-fast) ease both;
+  animation-delay: 30ms;
+}
+
+html.cb-motion .cb-iconButtonTooltip {
+  transition:
+    opacity var(--cb-motion-duration-fast) ease,
+    transform var(--cb-motion-duration-fast) var(--cb-motion-ease-out);
+  transform: translateX(-50%) translateY(3px);
+}
+
+html.cb-motion .cb-iconButtonRoot:hover .cb-iconButtonTooltip,
+html.cb-motion .cb-iconButtonRoot:focus-within .cb-iconButtonTooltip {
+  transform: translateX(-50%) translateY(0);
+}
+
+html.cb-motion .cb-themeSwatch {
+  transition: transform var(--cb-motion-duration-fast) var(--cb-motion-ease-spring);
+}
+
+html.cb-motion .cb-themeOption:hover .cb-themeSwatch,
+html.cb-motion .cb-themeOption:focus-visible .cb-themeSwatch {
+  transform: scale(1.08);
+}
+
+html.cb-motion .cb-pillBtn:disabled {
+  transition: opacity var(--cb-motion-duration-fast) ease;
+}
+
 /* Modals */
 html.cb-motion .cb-deleteDialogOverlay {
+  animation: cb-motion-fade-in var(--cb-motion-duration-normal) ease both;
+}
+
+html.cb-motion .cb-deleteDialogOverlay.cb-motion-dialog-enter {
   animation: cb-motion-fade-in var(--cb-motion-duration-normal) ease both;
 }
 
@@ -303,8 +513,66 @@ html.cb-motion .cb-deleteDialog {
   animation: cb-motion-scale-in var(--cb-motion-duration-normal) var(--cb-motion-ease-spring) both;
 }
 
+html.cb-motion .cb-deleteDialog .cb-deleteDialogIcon {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+  animation-delay: 60ms;
+}
+
+html.cb-motion .cb-deleteDialog .cb-deleteDialogTitle {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+  animation-delay: 90ms;
+}
+
+html.cb-motion .cb-deleteDialog .cb-deleteDialogSubtitle {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+  animation-delay: 110ms;
+}
+
+html.cb-motion .cb-deleteDialog .cb-addCategoryDialogInput {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
+  animation-delay: 100ms;
+}
+
+html.cb-motion .cb-deleteDialog .cb-deleteDialogActions {
+  animation: cb-motion-item-in-soft var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
+  animation-delay: 130ms;
+}
+
 /* Dropdown menus */
 html.cb-motion .cb-categoryPickerMenu:not([hidden]) {
   animation: cb-motion-menu-in var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
   transform-origin: top center;
+}
+
+html.cb-motion .cb-toast {
+  transition:
+    opacity var(--cb-motion-duration-normal) ease,
+    transform var(--cb-motion-duration-slow) var(--cb-motion-ease-spring);
+}
+
+html.cb-motion .cb-toast--leaving {
+  transition:
+    opacity var(--cb-motion-duration-fast) ease,
+    transform var(--cb-motion-duration-normal) var(--cb-motion-ease-out);
+}
+
+html.cb-motion .cb-title,
+html.cb-motion .cb-settingsSectionTitle,
+html.cb-motion .cb-settingsSubsectionTitle,
+html.cb-motion .cb-emptyStateTitle,
+html.cb-motion .cb-addCategoriesBtnText {
+  transition: color var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-settingsSectionHint,
+html.cb-motion .cb-emptyStateSubtitle {
+  transition: color var(--cb-motion-duration-fast) ease, opacity var(--cb-motion-duration-fast) ease;
+}
+
+html.cb-motion .cb-settingsToggleTrack,
+html.cb-motion .cb-settingsToggleTrack::after {
+  transition:
+    background-color var(--cb-motion-duration-fast) ease,
+    box-shadow var(--cb-motion-duration-fast) ease,
+    transform var(--cb-motion-duration-fast) var(--cb-motion-ease-spring);
 }

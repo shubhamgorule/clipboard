@@ -34,7 +34,8 @@ const state = {
   confirmRemoveLabel: null,
   showAddCategoryDialog: false,
   colorMode: "light",
-  theme: "default"
+  theme: "default",
+  motionEnabled: true
 };
 
 function $(id) {
@@ -53,10 +54,41 @@ async function persist() {
   }
 }
 
-function render({ screenTransition = false, listEnter = false } = {}) {
+function isMotionEnabled() {
+  return state.motionEnabled;
+}
+
+function syncMotionClass() {
+  document.documentElement.classList.toggle("cb-motion", isMotionEnabled());
+}
+
+async function setMotionEnabled(enabled) {
+  const previous = state.motionEnabled;
+  state.motionEnabled = enabled;
+  syncMotionClass();
+
+  try {
+    await savePreferences({ motionEnabled: enabled });
+  } catch (err) {
+    state.motionEnabled = previous;
+    syncMotionClass();
+    console.error("Failed to save motion preference:", err);
+    showToast({
+      message: err?.message || "Could not save animation preference.",
+      tone: "danger"
+    });
+  }
+}
+
+function render({
+  screenTransition = false,
+  listEnter = false,
+  settingsEnter = false,
+  focusRowId = null
+} = {}) {
   const app = $("app");
   app.replaceChildren(build());
-  applyMotionIntent({ screenTransition, listEnter });
+  applyMotionIntent({ screenTransition, listEnter, settingsEnter, focusRowId });
 
   if (state.showAddCategoryDialog && state.mode !== "settings") {
     document.querySelector(".cb-addCategoryDialogInput")?.focus();
@@ -67,19 +99,78 @@ function render({ screenTransition = false, listEnter = false } = {}) {
   }
 }
 
-function applyMotionIntent({ screenTransition = false, listEnter = false } = {}) {
-  if (!document.documentElement.classList.contains("cb-motion")) return;
+function applyMotionIntent({
+  screenTransition = false,
+  listEnter = false,
+  settingsEnter = false,
+  focusRowId = null
+} = {}) {
+  if (!isMotionEnabled()) return;
 
   if (screenTransition) {
     document.querySelector(".cb-surfaceInner")?.classList.add("cb-motion-screen");
   }
 
-  if (listEnter) {
+  if (listEnter && state.mode !== "settings") {
+    document.querySelector(".cb-surfaceInner")?.classList.add("cb-motion-shell-enter");
+    scheduleClassCleanup("cb-motion-shell-enter", 400);
+
     for (const container of document.querySelectorAll(".cb-container")) {
       container.classList.add("cb-motion-list-enter");
+      if (container.classList.contains("cb-searchContainer")) {
+        container.classList.add("cb-motion-list-enter--soft");
+      }
     }
     scheduleListEnterCleanup();
+
+    const catBar = document.querySelector(".cb-categoriesWrap");
+    if (catBar) {
+      catBar.classList.add("cb-motion-bar-enter");
+      scheduleClassCleanup("cb-motion-bar-enter", 400);
+    }
   }
+
+  if (settingsEnter || (listEnter && state.mode === "settings")) {
+    document.querySelector(".cb-settings")?.classList.add("cb-motion-settings-enter");
+    scheduleClassCleanup("cb-motion-settings-enter", 550);
+  }
+
+  if (focusRowId) {
+    const row = document.querySelector(`[data-item-id="${CSS.escape(focusRowId)}"]`);
+    row?.classList.add("cb-motion-row-enter");
+    scheduleClassCleanup("cb-motion-row-enter", 350);
+  }
+
+  if (state.confirmDeleteId || state.confirmRemoveLabel || state.showAddCategoryDialog) {
+    for (const overlay of document.querySelectorAll(".cb-deleteDialogOverlay")) {
+      overlay.classList.add("cb-motion-dialog-enter");
+    }
+    scheduleClassCleanup("cb-motion-dialog-enter", 400);
+  }
+}
+
+let motionCleanupTimers = new Map();
+
+function scheduleClassCleanup(className, delayMs) {
+  const existing = motionCleanupTimers.get(className);
+  if (existing) clearTimeout(existing);
+
+  motionCleanupTimers.set(
+    className,
+    setTimeout(() => {
+      for (const el of document.querySelectorAll(`.${className}`)) {
+        el.classList.remove(className);
+      }
+      motionCleanupTimers.delete(className);
+    }, delayMs)
+  );
+}
+
+function applyContainerEnter(container, { soft = false } = {}) {
+  if (!isMotionEnabled() || !container) return;
+  container.classList.add("cb-motion-list-enter");
+  if (soft) container.classList.add("cb-motion-list-enter--soft");
+  scheduleListEnterCleanup();
 }
 
 let listEnterCleanupTimer = null;
@@ -104,7 +195,7 @@ function scheduleListEnterCleanup() {
   if (listEnterCleanupTimer) clearTimeout(listEnterCleanupTimer);
   listEnterCleanupTimer = setTimeout(() => {
     for (const container of document.querySelectorAll(".cb-motion-list-enter")) {
-      container.classList.remove("cb-motion-list-enter");
+      container.classList.remove("cb-motion-list-enter", "cb-motion-list-enter--soft");
     }
     for (const container of document.querySelectorAll(".cb-container")) {
       syncContainerScroll(container);
@@ -347,9 +438,8 @@ function cancelSearch() {
     if (container) {
       container.classList.remove("cb-searchContainer");
       fillContainer(container);
-      if (document.documentElement.classList.contains("cb-motion")) {
-        container.classList.add("cb-motion-list-enter");
-        scheduleListEnterCleanup();
+      if (isMotionEnabled()) {
+        applyContainerEnter(container);
       }
       syncContainerScroll(container);
     }
@@ -406,7 +496,7 @@ function startEdit(id) {
   state.editingId = id;
   state.editDraft = item.text;
   state.editCategory = resolveEditCategory(item.category);
-  render();
+  render({ focusRowId: id });
 }
 
 function refreshEdit(id) {
@@ -431,7 +521,7 @@ function cancelEdit(id) {
   state.editingId = null;
   state.editDraft = "";
   state.editCategory = UNCATEGORIZED;
-  render();
+  render({ focusRowId: id });
 }
 
 function confirmEdit(id) {
@@ -448,7 +538,7 @@ function confirmEdit(id) {
   state.editDraft = "";
   state.editCategory = UNCATEGORIZED;
   void persist();
-  render();
+  render({ focusRowId: id });
   showToast({ message: "Changes saved" });
 }
 
@@ -461,7 +551,7 @@ function deleteItem(id) {
   }
   if (state.confirmDeleteId === id) state.confirmDeleteId = null;
   void persist();
-  render();
+  render({ listEnter: true });
   showToast({ message: "Item deleted", tone: "danger" });
 }
 
@@ -496,7 +586,7 @@ function captureRowPositions(container) {
 }
 
 function animateRowReorder(container, beforePositions) {
-  if (!container || !document.documentElement.classList.contains("cb-motion")) return;
+  if (!container || !isMotionEnabled()) return;
 
   for (const row of container.querySelectorAll(".cb-clipRow[data-item-id]")) {
     const before = beforePositions.get(row.dataset.itemId);
@@ -576,7 +666,7 @@ function addLabel() {
     state.activeCategory = ALL_CATEGORY;
   }
   void persist();
-  render();
+  render({ settingsEnter: true });
   showToast({ message: "Category added" });
 }
 
@@ -622,7 +712,7 @@ function requestRemoveLabel(name) {
 
 function cancelRemoveLabel() {
   state.confirmRemoveLabel = null;
-  render();
+  render({ settingsEnter: true });
 }
 
 function finalizeRemoveLabel(name, { moveTo } = {}) {
@@ -643,7 +733,7 @@ function finalizeRemoveLabel(name, { moveTo } = {}) {
   }
   state.confirmRemoveLabel = null;
   void persist();
-  render();
+  render({ settingsEnter: true });
   showToast({ message: "Category removed", tone: "danger" });
 }
 
@@ -670,10 +760,6 @@ function exportClipboardBackup() {
 }
 
 function fillContainer(container) {
-  if (state.mode === "search") {
-    container.classList.remove("cb-motion-list-enter");
-  }
-
   container.replaceChildren();
   const items = getFilteredItems();
   const emptyContent = items.length === 0 ? getEmptyStateContent() : null;
@@ -690,6 +776,9 @@ function fillContainer(container) {
       })
     );
     syncContainerScroll(container);
+    if (isMotionEnabled() && isSearchFiltering()) {
+      applyContainerEnter(container, { soft: true });
+    }
     return;
   }
 
@@ -747,6 +836,10 @@ function fillContainer(container) {
 
   setupListReorder(container, { onMove: moveItem });
   syncContainerScroll(container);
+
+  if (isMotionEnabled() && isSearchFiltering()) {
+    applyContainerEnter(container, { soft: true });
+  }
 }
 
 function syncContainerScroll(container) {
@@ -878,7 +971,7 @@ function buildHeader() {
           return;
         }
         state.mode = "settings";
-        render({ screenTransition: true });
+        render({ screenTransition: true, settingsEnter: true });
       }
     })
   );
@@ -895,8 +988,15 @@ function buildSettingsView() {
     theme: state.theme,
     colorModes: COLOR_MODES,
     themes: THEMES,
+    motionEnabled: state.motionEnabled,
     onColorModeChange: (colorMode) => setAppearance({ colorMode }),
     onThemeChange: (theme) => setAppearance({ theme }),
+    onMotionChange: (enabled) => {
+      void setMotionEnabled(enabled);
+      if (enabled) {
+        applyMotionIntent({ settingsEnter: true });
+      }
+    },
     labels: state.labels,
     labelDraft: state.labelDraft,
     showSystemCategories: hasCategories(),
@@ -1080,10 +1180,13 @@ async function init() {
     const applied = applyAppearance({ colorMode: prefs.colorMode, theme: prefs.theme });
     state.colorMode = applied.colorMode;
     state.theme = applied.theme;
+    state.motionEnabled = prefs.motionEnabled;
   } catch (err) {
     console.error("Failed to load preferences:", err);
     applyAppearance({ colorMode: "light", theme: "default" });
   }
+
+  syncMotionClass();
 
   try {
     const data = await loadData();
@@ -1092,7 +1195,7 @@ async function init() {
   } catch (err) {
     console.error("Failed to load clipboard data:", err);
   }
-  render({ listEnter: state.items.length > 0 && state.items.length <= 12 });
+  render({ listEnter: true });
   preloadIcons();
 }
 
