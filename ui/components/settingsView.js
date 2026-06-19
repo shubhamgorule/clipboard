@@ -88,7 +88,7 @@ export function createSettingsView({
   return wrap;
 }
 
-const CHECK_SVG = `<svg class="cb-themeOptionCheck" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHECK_SVG = `<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 function buildSectionHead(title, hint) {
   const head = document.createElement("div");
@@ -166,7 +166,7 @@ function buildAppearanceSection({
 function buildThemeList({ options, selectedId, ariaLabel, onSelect }) {
   const list = document.createElement("div");
   list.className = "cb-themeList";
-  list.setAttribute("role", "listbox");
+  list.setAttribute("role", "radiogroup");
   list.setAttribute("aria-label", ariaLabel);
 
   let currentId = selectedId;
@@ -178,8 +178,9 @@ function buildThemeList({ options, selectedId, ariaLabel, onSelect }) {
     for (const btn of list.querySelectorAll(".cb-themeOption")) {
       const active = btn.dataset.id === id;
       btn.classList.toggle("cb-themeOption--selected", active);
-      btn.setAttribute("aria-selected", active ? "true" : "false");
-      btn.querySelector(".cb-themeOptionCheck").hidden = !active;
+      btn.setAttribute("aria-checked", active ? "true" : "false");
+      const check = btn.querySelector(".cb-themeOptionCheck");
+      if (check) check.hidden = !active;
     }
   }
 
@@ -201,8 +202,8 @@ function buildThemeOption({ option, selected, onSelect }) {
   btn.type = "button";
   btn.className = `cb-themeOption${selected ? " cb-themeOption--selected" : ""}`;
   btn.dataset.id = option.id;
-  btn.setAttribute("role", "option");
-  btn.setAttribute("aria-selected", selected ? "true" : "false");
+  btn.setAttribute("role", "radio");
+  btn.setAttribute("aria-checked", selected ? "true" : "false");
 
   const start = document.createElement("span");
   start.className = "cb-themeOptionStart";
