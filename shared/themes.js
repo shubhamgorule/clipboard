@@ -15,6 +15,9 @@ export const THEMES = [
   { id: "lavender", label: "Lavender", swatch: "#e8e6ec" }
 ];
 
+/** @deprecated Use THEMES — kept for older popup builds still importing ACCENTS. */
+export const ACCENTS = THEMES;
+
 const COLOR_MODE_IDS = new Set(COLOR_MODES.map((mode) => mode.id));
 const THEME_IDS = new Set(THEMES.map((theme) => theme.id));
 
