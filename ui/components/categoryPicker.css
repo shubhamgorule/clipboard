@@ -20,7 +20,7 @@
   box-sizing: border-box;
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   font-family: inherit;
 }
 
@@ -33,7 +33,7 @@
 .cb-categoryPickerLabel{
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   white-space: nowrap;
 }
 
@@ -87,7 +87,7 @@
 .cb-categoryPickerOptionLabel{
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-text);
 }
 
@@ -103,6 +103,21 @@
 
 .cb-categoryPickerOptionCheck[hidden]{
   display: none;
+}
+
+.cb-categoryPickerOption--add{
+  margin-top: var(--cb-space-4);
+  border-top: 1px solid var(--cb-color-border);
+  border-radius: 0;
+  padding-top: 12px;
+}
+
+.cb-categoryPickerOption--add:hover{
+  background: var(--cb-color-pill);
+}
+
+.cb-categoryPickerOption--add .cb-categoryPickerOptionLabel{
+  color: var(--cb-color-text);
 }
 
 .cb-categoryPickerCheck{

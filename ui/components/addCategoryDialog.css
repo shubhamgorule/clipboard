@@ -1,0 +1,46 @@
+.cb-addCategoryDialogIcon .cb-iconButton{
+  background: var(--cb-color-pill);
+  color: var(--cb-color-text);
+  cursor: default;
+  pointer-events: none;
+}
+
+.cb-addCategoryDialogIcon .cb-iconButton:disabled{
+  opacity: 1;
+}
+
+.cb-addCategoryDialogInput{
+  width: 100%;
+  height: var(--cb-row-h);
+  border: 1px solid var(--cb-color-border);
+  border-radius: var(--cb-space-12);
+  padding: 0 var(--cb-space-12);
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 550;
+  color: var(--cb-color-text);
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.cb-addCategoryDialogInput::placeholder{
+  color: var(--cb-color-muted);
+}
+
+.cb-addCategoryDialogInput:focus{
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.cb-addCategoryDialogSubmit{
+  background: var(--cb-color-text);
+  border: 0;
+  color: #fff;
+}
+
+.cb-addCategoryDialogSubmit:disabled{
+  opacity: 0.35;
+  cursor: not-allowed;
+}

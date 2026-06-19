@@ -2,6 +2,7 @@ import { createIconButton, preloadIcons } from "../ui/components/iconButton.js";
 import { createCategoryBar } from "../ui/components/categoryBar.js";
 import { createCategoryPicker } from "../ui/components/categoryPicker.js";
 import { createClipRow, setupListReorder, resizeClipRowEditInput } from "../ui/components/clipRow.js";
+import { createAddCategoryDialog } from "../ui/components/addCategoryDialog.js";
 import { createDeleteDialog } from "../ui/components/deleteDialog.js";
 import { createRemoveLabelDialog } from "../ui/components/removeLabelDialog.js";
 import { createEmptyState } from "../ui/components/emptyState.js";
@@ -27,7 +28,8 @@ const state = {
   editDraft: "",
   editCategory: UNCATEGORIZED,
   confirmDeleteId: null,
-  confirmRemoveLabel: null
+  confirmRemoveLabel: null,
+  showAddCategoryDialog: false
 };
 
 function $(id) {
@@ -43,7 +45,9 @@ function render({ screenTransition = false, listEnter = false } = {}) {
   app.replaceChildren(build());
   applyMotionIntent({ screenTransition, listEnter });
 
-  if (state.mode === "search") {
+  if (state.showAddCategoryDialog && state.mode !== "settings") {
+    document.querySelector(".cb-addCategoryDialogInput")?.focus();
+  } else if (state.mode === "search") {
     const input = document.querySelector(".cb-searchInput");
     autoResizeSearchInput(input);
     input?.focus();
@@ -66,6 +70,22 @@ function applyMotionIntent({ screenTransition = false, listEnter = false } = {})
 }
 
 let listEnterCleanupTimer = null;
+let searchFillTimer = null;
+
+function cancelSearchFill() {
+  if (searchFillTimer) {
+    clearTimeout(searchFillTimer);
+    searchFillTimer = null;
+  }
+}
+
+function scheduleSearchFill(container) {
+  cancelSearchFill();
+  searchFillTimer = setTimeout(() => {
+    searchFillTimer = null;
+    fillContainer(container);
+  }, 120);
+}
 
 function scheduleListEnterCleanup() {
   if (listEnterCleanupTimer) clearTimeout(listEnterCleanupTimer);
@@ -177,6 +197,10 @@ function getCategoryPickerOptions() {
   return hasCategories() ? [UNCATEGORIZED, ...state.labels] : [];
 }
 
+function getSearchCategoryPickerOptions() {
+  return [UNCATEGORIZED, ...state.labels];
+}
+
 function resolveEditCategory(category) {
   const options = getCategoryPickerOptions();
   if (options.includes(category)) return category;
@@ -196,12 +220,17 @@ function enterSearchMode() {
     notifyEditBlocked();
     return;
   }
+  cancelSearchFill();
   state.mode = "search";
   state.addCategory = defaultAddCategory();
   state.addCategoryLocked = state.labels.includes(state.activeCategory);
 
   const composer = document.querySelector(".cb-composer");
   if (composer) {
+    if (!composer.querySelector(".cb-categoryPicker")) {
+      render();
+      return;
+    }
     syncComposerMode();
     syncHomeChrome();
     syncSearchUI();
@@ -269,7 +298,7 @@ function syncHomeChrome() {
     inner.classList.toggle("cb-home--default", !isSearchActive());
   }
   const catBar = document.querySelector(".cb-categoriesWrap");
-  if (catBar) catBar.hidden = isSearchActive();
+  if (catBar) catBar.hidden = isSearchActive() && isSearchFiltering();
 }
 
 function addItem() {
@@ -292,6 +321,7 @@ function addItem() {
 }
 
 function cancelSearch() {
+  cancelSearchFill();
   state.mode = "default";
   state.query = "";
   state.addCategoryLocked = false;
@@ -491,18 +521,56 @@ function normalizeLabelName(name) {
   return (name ?? "").trim().replace(/\s+/g, " ");
 }
 
+function validateLabelName(name) {
+  const normalized = normalizeLabelName(name);
+  if (!normalized) return { ok: false };
+  if (RESERVED_LABELS.has(normalized.toLowerCase())) {
+    return { ok: false, message: "That name is reserved" };
+  }
+  if (state.labels.some((l) => l.toLowerCase() === normalized.toLowerCase())) {
+    return { ok: false, message: "Category already exists" };
+  }
+  return { ok: true, name: normalized };
+}
+
 function addLabel() {
-  const name = normalizeLabelName(state.labelDraft);
-  if (!name) return;
-  if (RESERVED_LABELS.has(name.toLowerCase())) {
-    showToast({ message: "That name is reserved" });
+  const result = validateLabelName(state.labelDraft);
+  if (!result.ok) {
+    if (result.message) showToast({ message: result.message });
     return;
   }
-  if (state.labels.some((l) => l.toLowerCase() === name.toLowerCase())) {
-    showToast({ message: "Category already exists" });
+  state.labels.push(result.name);
+  state.labelDraft = "";
+  if (!hasCategories()) {
+    state.activeCategory = ALL_CATEGORY;
+  }
+  void persist();
+  render();
+  showToast({ message: "Category added" });
+}
+
+function openAddCategoryDialog() {
+  state.showAddCategoryDialog = true;
+  state.labelDraft = "";
+  render();
+}
+
+function cancelAddCategoryDialog() {
+  state.showAddCategoryDialog = false;
+  state.labelDraft = "";
+  render();
+}
+
+function confirmAddCategoryDialog() {
+  const result = validateLabelName(state.labelDraft);
+  if (!result.ok) {
+    if (result.message) showToast({ message: result.message });
     return;
   }
-  state.labels.push(name);
+  state.labels.push(result.name);
+  state.addCategory = result.name;
+  state.addCategoryLocked = true;
+  state.showAddCategoryDialog = false;
   state.labelDraft = "";
   if (!hasCategories()) {
     state.activeCategory = ALL_CATEGORY;
@@ -652,8 +720,18 @@ function syncSearchUI() {
   syncAddCategoryFromQuery();
   syncHomeChrome();
   if (isSearchActive() && container) {
-    container.classList.toggle("cb-searchContainer", isSearchFiltering());
-    fillContainer(container);
+    const filtering = isSearchFiltering();
+    container.classList.toggle("cb-searchContainer", filtering);
+    cancelSearchFill();
+    if (filtering) {
+      scheduleSearchFill(container);
+    } else {
+      fillContainer(container);
+      syncContainerScroll(container);
+    }
+  }
+  if (isSearchActive()) {
+    categoryPicker?.cbSetOptions?.(getSearchCategoryPickerOptions());
   }
   if (addBtn) addBtn.disabled = !(state.query ?? "").trim();
   categoryPicker?.cbSetValue?.(state.addCategory);
@@ -669,38 +747,49 @@ function build() {
 
   if (state.mode === "settings") {
     inner.appendChild(buildSettingsView());
-    if (state.confirmRemoveLabel) {
-      const label = state.confirmRemoveLabel;
+  } else {
+    inner.appendChild(buildHeader());
+    inner.appendChild(buildComposer());
+    if (hasCategories() && (!isSearchActive() || !isSearchFiltering())) {
+      inner.appendChild(buildCategoryBar());
+    }
+    const listClass = isSearchFiltering() ? "cb-container cb-searchContainer" : "cb-container";
+    inner.appendChild(buildListContainer(listClass));
+
+    inner.classList.toggle("cb-home--search", isSearchActive());
+    inner.classList.toggle("cb-home--default", state.mode === "default");
+
+    if (state.confirmDeleteId) {
       inner.appendChild(
-        createRemoveLabelDialog({
-          label,
-          itemCount: countItemsInLabel(label),
-          onCancel: cancelRemoveLabel,
-          onDeleteCategory: () => confirmRemoveLabel(label)
+        createDeleteDialog({
+          onDelete: () => confirmDelete(state.confirmDeleteId),
+          onKeep: () => cancelDelete(state.confirmDeleteId)
         })
       );
     }
-    return outer;
   }
 
-  inner.appendChild(buildHeader());
-  inner.appendChild(buildComposer());
-  if (hasCategories() && !isSearchActive()) {
-    inner.appendChild(buildCategoryBar());
-  }
-  const listClass = isSearchFiltering() ? "cb-container cb-searchContainer" : "cb-container";
-  inner.appendChild(buildListContainer(listClass));
-
-  if (state.mode !== "settings") {
-    inner.classList.toggle("cb-home--search", isSearchActive());
-    inner.classList.toggle("cb-home--default", state.mode === "default");
-  }
-
-  if (state.confirmDeleteId) {
+  if (state.mode === "settings" && state.confirmRemoveLabel) {
+    const label = state.confirmRemoveLabel;
     inner.appendChild(
-      createDeleteDialog({
-        onDelete: () => confirmDelete(state.confirmDeleteId),
-        onKeep: () => cancelDelete(state.confirmDeleteId)
+      createRemoveLabelDialog({
+        label,
+        itemCount: countItemsInLabel(label),
+        onCancel: cancelRemoveLabel,
+        onDeleteCategory: () => confirmRemoveLabel(label)
+      })
+    );
+  }
+
+  if (state.showAddCategoryDialog && state.mode !== "settings") {
+    inner.appendChild(
+      createAddCategoryDialog({
+        value: state.labelDraft,
+        onDraftChange: (value) => {
+          state.labelDraft = value;
+        },
+        onCancel: cancelAddCategoryDialog,
+        onAdd: confirmAddCategoryDialog
       })
     );
   }
@@ -808,17 +897,16 @@ function buildComposer() {
   prompt.appendChild(input);
   top.appendChild(prompt);
 
-  const categoryOptions = getCategoryPickerOptions();
-  const categoryPicker = categoryOptions.length
-    ? createCategoryPicker({
-        value: state.addCategory,
-        options: categoryOptions,
-        onChange: (category) => {
-          state.addCategory = category;
-          state.addCategoryLocked = true;
-        }
-      })
-    : null;
+  const categoryPicker = createCategoryPicker({
+    value: state.addCategory,
+    options: getSearchCategoryPickerOptions(),
+    showAddCategoryOption: true,
+    onAddCategory: openAddCategoryDialog,
+    onChange: (category) => {
+      state.addCategory = category;
+      state.addCategoryLocked = true;
+    }
+  });
 
   const actionBtns = document.createElement("div");
   actionBtns.className = "cb-actionBtns";
@@ -839,7 +927,7 @@ function buildComposer() {
 
   const actions = document.createElement("div");
   actions.className = "cb-actionsRow";
-  if (categoryPicker) actions.appendChild(categoryPicker);
+  actions.appendChild(categoryPicker);
   actions.appendChild(actionBtns);
 
   const actionsWrap = document.createElement("div");
@@ -861,8 +949,7 @@ function buildComposer() {
       notifyEditBlocked();
       return;
     }
-    state.mode = "settings";
-    render({ screenTransition: true });
+    openAddCategoryDialog();
   });
 
   const categoriesLabel = document.createElement("p");
@@ -917,7 +1004,7 @@ async function init() {
   } catch (err) {
     console.error("Failed to load clipboard data:", err);
   }
-  render({ listEnter: true });
+  render({ listEnter: state.items.length > 0 && state.items.length <= 12 });
   preloadIcons();
 }
 

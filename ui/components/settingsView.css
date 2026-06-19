@@ -21,7 +21,7 @@
   margin: 0;
   font-size: 15px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-text);
 }
 
@@ -29,7 +29,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 18px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-muted);
 }
 
@@ -56,7 +56,7 @@
   background: var(--cb-color-pill);
   font-size: 13px;
   line-height: 18px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-text);
   white-space: nowrap;
 }
@@ -79,7 +79,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-text);
   background: #fff;
   outline: none;

@@ -1,15 +1,15 @@
 @font-face{
   font-family: "Asta Sans";
   font-style: normal;
-  font-weight: 600;
+  font-weight: 550;
   font-display: swap;
-  src: url("../../popup/fonts/Asta_Sans/static/AstaSans-SemiBold.ttf") format("truetype");
+  src: url("../../popup/fonts/Asta_Sans/static/AstaSans-Medium.ttf") format("truetype");
 }
 
 @font-face{
   font-family: "Asta Sans";
   font-style: normal;
-  font-weight: 700;
+  font-weight: 650;
   font-display: swap;
   src: url("../../popup/fonts/Asta_Sans/static/AstaSans-Bold.ttf") format("truetype");
 }
@@ -35,6 +35,7 @@
   --cb-w: 400px;
   --cb-h: 600px;
   --cb-radius: 24px;
+  --cb-shell-margin: 8px;
 
   /* Figma spacing (3008:7919 / 3008:7462 / 3008:7002) */
   --cb-space-4: 4px;

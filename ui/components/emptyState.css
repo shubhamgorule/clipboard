@@ -21,7 +21,7 @@
   max-width: 280px;
   font-size: 15px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-muted);
 }
 
@@ -30,7 +30,7 @@
   max-width: 280px;
   font-size: 13px;
   line-height: 18px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-muted);
   opacity: 0.75;
 }

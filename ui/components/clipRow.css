@@ -16,7 +16,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-text);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -101,7 +101,7 @@
   max-height: 160px;
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 550;
   color: var(--cb-color-text);
   background: transparent;
   font-family: inherit;

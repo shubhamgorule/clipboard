@@ -38,7 +38,7 @@ function onDocumentKeyDown(event) {
   }
 }
 
-function renderOptions(menu, options, value, onSelect) {
+function renderOptions(menu, options, value, onSelect, { showAddCategoryOption = false, onAddCategory } = {}) {
   menu.replaceChildren();
   for (const option of options) {
     const isSelected = option === value;
@@ -65,6 +65,25 @@ function renderOptions(menu, options, value, onSelect) {
       closeActivePicker();
     });
     menu.appendChild(btn);
+  }
+
+  if (showAddCategoryOption) {
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "cb-categoryPickerOption cb-categoryPickerOption--add";
+    addBtn.setAttribute("role", "option");
+
+    const label = document.createElement("span");
+    label.className = "cb-categoryPickerOptionLabel";
+    label.textContent = "Add category";
+
+    addBtn.appendChild(label);
+    addBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeActivePicker();
+      onAddCategory?.();
+    });
+    menu.appendChild(addBtn);
   }
 }
 
@@ -103,7 +122,13 @@ function resetMenuPosition(menu) {
 /**
  * ChatGPT-style model picker for choosing a clip label/category.
  */
-export function createCategoryPicker({ value, options = [], onChange } = {}) {
+export function createCategoryPicker({
+  value,
+  options = [],
+  onChange,
+  showAddCategoryOption = false,
+  onAddCategory
+} = {}) {
   const root = document.createElement("div");
   root.className = "cb-categoryPicker";
 
@@ -129,6 +154,8 @@ export function createCategoryPicker({ value, options = [], onChange } = {}) {
   let currentValue = value ?? options[0] ?? "";
   let isOpen = false;
 
+  const pickerExtras = () => ({ showAddCategoryOption, onAddCategory });
+
   function setValue(next) {
     currentValue = next;
     triggerLabel.textContent = next;
@@ -136,7 +163,7 @@ export function createCategoryPicker({ value, options = [], onChange } = {}) {
       currentValue = selected;
       triggerLabel.textContent = selected;
       onChange?.(selected);
-    });
+    }, pickerExtras());
   }
 
   function openMenu() {
@@ -149,7 +176,7 @@ export function createCategoryPicker({ value, options = [], onChange } = {}) {
     renderOptions(menu, options, currentValue, (selected) => {
       setValue(selected);
       onChange?.(selected);
-    });
+    }, pickerExtras());
     document.body.appendChild(menu);
     requestAnimationFrame(() => positionMenu(trigger, menu));
     bindGlobalDismiss();
@@ -182,7 +209,7 @@ export function createCategoryPicker({ value, options = [], onChange } = {}) {
       renderOptions(menu, options, currentValue, (selected) => {
         setValue(selected);
         onChange?.(selected);
-      });
+      }, pickerExtras());
     }
   };
 
