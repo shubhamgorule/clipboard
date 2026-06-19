@@ -1,4 +1,5 @@
-import { DEFAULT_COLOR_MODE, DEFAULT_THEME } from "./preferences.js";
+const DEFAULT_COLOR_MODE = "light";
+const DEFAULT_THEME = "default";
 
 export const COLOR_MODES = [
   { id: "light", label: "Light", swatch: "#f0f0f0" },
@@ -15,7 +16,7 @@ export const THEMES = [
   { id: "lavender", label: "Lavender", swatch: "#e8e6ec" }
 ];
 
-/** @deprecated Use THEMES — kept for older popup builds still importing ACCENTS. */
+/** @deprecated Use THEMES */
 export const ACCENTS = THEMES;
 
 const COLOR_MODE_IDS = new Set(COLOR_MODES.map((mode) => mode.id));
@@ -41,6 +42,14 @@ export function applyAppearance({ colorMode = DEFAULT_COLOR_MODE, theme = DEFAUL
   delete document.documentElement.dataset.cbAccent;
 
   return { colorMode: mode, theme: palette };
+}
+
+/** @deprecated Use applyAppearance */
+export function applyTheme(prefs) {
+  if (typeof prefs === "string") {
+    return applyAppearance({ colorMode: prefs });
+  }
+  return applyAppearance(prefs ?? {});
 }
 
 /** @param {string} colorMode */
