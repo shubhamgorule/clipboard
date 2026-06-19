@@ -51,10 +51,18 @@ export function normalizePreferences(stored) {
   const record = /** @type {Record<string, unknown>} */ (stored);
 
   if (typeof record.colorMode === "string") {
-    return {
-      colorMode: pickValid(record.colorMode, VALID_COLOR_MODES, DEFAULT_COLOR_MODE),
-      theme: pickValid(record.theme, VALID_THEMES, DEFAULT_THEME)
-    };
+    const colorMode = pickValid(record.colorMode, VALID_COLOR_MODES, DEFAULT_COLOR_MODE);
+    const theme = pickValid(record.theme, VALID_THEMES, "");
+    if (theme) {
+      return { colorMode, theme };
+    }
+
+    const accent = typeof record.accent === "string" ? record.accent.trim() : "";
+    if (VALID_THEMES.has(accent)) {
+      return { colorMode, theme: accent };
+    }
+
+    return { colorMode, theme: DEFAULT_THEME };
   }
 
   return migrateLegacyPreferences(record);
@@ -71,10 +79,25 @@ export async function loadPreferences() {
   }
 }
 
+function getPreferencesErrorMessage(err) {
+  const message = chrome.runtime?.lastError?.message;
+  if (message) return message;
+  return err?.message || "Could not save appearance preference.";
+}
+
 /** @param {Partial<ClipboardPreferences>} patch */
 export async function savePreferences(patch) {
   const current = await loadPreferences();
   const next = normalizePreferences({ ...current, ...patch });
-  await chrome.storage.local.set({ [PREFERENCES_KEY]: next });
+
+  try {
+    await chrome.storage.local.set({ [PREFERENCES_KEY]: next });
+    if (chrome.runtime?.lastError) {
+      throw new Error(chrome.runtime.lastError.message);
+    }
+  } catch (err) {
+    throw new Error(getPreferencesErrorMessage(err));
+  }
+
   return next;
 }

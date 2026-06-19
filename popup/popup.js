@@ -1048,19 +1048,25 @@ function buildListContainer(className) {
 }
 
 async function setAppearance({ colorMode, theme } = {}) {
-  if (colorMode !== undefined) state.colorMode = colorMode;
-  if (theme !== undefined) state.theme = theme;
-
-  const applied = applyAppearance({ colorMode: state.colorMode, theme: state.theme });
-  state.colorMode = applied.colorMode;
-  state.theme = applied.theme;
+  const previous = { colorMode: state.colorMode, theme: state.theme };
 
   try {
+    if (colorMode !== undefined) state.colorMode = colorMode;
+    if (theme !== undefined) state.theme = theme;
+
+    const applied = applyAppearance({ colorMode: state.colorMode, theme: state.theme });
+    state.colorMode = applied.colorMode;
+    state.theme = applied.theme;
+
     await savePreferences({ colorMode: state.colorMode, theme: state.theme });
   } catch (err) {
+    state.colorMode = previous.colorMode;
+    state.theme = previous.theme;
+    applyAppearance(previous);
+    if (state.mode === "settings") render({ screenTransition: false });
     console.error("Failed to save appearance preference:", err);
     showToast({
-      message: "Could not save appearance preference.",
+      message: err?.message || "Could not save appearance preference.",
       tone: "danger"
     });
   }
