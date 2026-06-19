@@ -1,4 +1,6 @@
-chrome.runtime.onInstalled.addListener(() => {
-  // Migrations and storage seeding live here in future versions.
-});
+import { restrictStorageAccess, runMigrations } from "../shared/storage.js";
 
+chrome.runtime.onInstalled.addListener(() => {
+  void runMigrations();
+  void restrictStorageAccess();
+});

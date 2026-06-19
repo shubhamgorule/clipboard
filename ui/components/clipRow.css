@@ -41,8 +41,8 @@
   opacity: 0;
   pointer-events:none;
   transform: translateY(-50%);
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, #ffffff 20.917%, #ffffff 100%);
-  box-shadow: 0px 0px 32px 0px #ffffff;
+  background: linear-gradient(90deg, transparent 0%, var(--cb-color-row-fade) 20.917%, var(--cb-color-row-fade) 100%);
+  box-shadow: 0px 0px 32px 0px var(--cb-color-row-fade);
 }
 
 /* Hover/Edit dock (3008:7462 Hover) */
@@ -57,7 +57,7 @@
   padding: var(--cb-dock-pad);
   box-sizing: border-box;
   transform: translateY(-50%);
-  background: #ffffff;
+  background: var(--cb-color-surface-raised);
   border: 1px solid var(--cb-color-border);
   border-radius: var(--cb-dock-radius);
   box-shadow: var(--cb-shadow-action);
@@ -123,7 +123,7 @@
   left: var(--cb-row-pad-x);
   right: var(--cb-row-pad-right);
   height: 2px;
-  background: var(--cb-color-text);
+  background: var(--cb-color-primary);
   z-index: 6;
   pointer-events: none;
   border-radius: 1px;
@@ -180,7 +180,6 @@
 .cb-clipRowActionsDock .cb-categoryPickerTrigger:hover,
 .cb-clipRowActionsDock .cb-categoryPickerTrigger[aria-expanded="true"]{
   background: var(--cb-color-pill);
-  border-color: transparent;
 }
 
 .cb-clipRowActionsDock .cb-categoryPickerLabel{

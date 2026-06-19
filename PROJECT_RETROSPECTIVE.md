@@ -51,14 +51,13 @@ We built a **full MV3 extension** in one pass:
 | Tooltips | Custom labels centered below icons |
 | Delete | Inline dock confirm (separate `deleteDialog` component exists but unused) |
 
-### Phase D — Where we stopped (not finished)
+### Phase D — Where we stopped (updated)
 
-- **No `chrome.storage` wiring** — items live in `popup.js` memory only
-- **Service worker** is a placeholder
-- **Settings** is a stub (“Settings coming soon”)
-- **Categories** — new items always `category: "All"`; Mail/General/Socials tabs don’t auto-classify
+- **`chrome.storage.local` wired** — items and labels persist via `shared/storage.js` (since commit `106b8fc`)
+- **Service worker** runs migrations and restricts storage to trusted extension contexts
+- **Settings** — category management plus export / import / clear-all data controls
+- **Categories** — user-defined labels; detector suggests Mail/General/Socials when those labels exist
 - **No toolbar icons** in `manifest.json` (16/48/128)
-- **Many changes uncommitted** after `ec5017e`
 - **No README** for load/test workflow in repo
 
 ---
@@ -115,26 +114,27 @@ We built a **full MV3 extension** in one pass:
 
 ### P0 — Must have before calling it “v1”
 
-1. **`chrome.storage.local`** — load on popup open, save on add/edit/delete/reorder
-2. **Category detector** on add (email → Mail, URL → Socials or General, else General/All)
-3. **Persist edit/delete/reorder** through storage, not just `state.items`
-4. **Toolbar icons** in manifest
-5. **One delete UX** — either wire `createDeleteDialog` or remove it; don’t maintain both
-6. **Commit + README** — how to load unpacked, Figma node map, font license note
+1. **`chrome.storage.local`** — load on popup open, save on add/edit/delete/reorder — **done**
+2. **Category detector** on add (email → Mail, URL → Socials or General, else General) — **done** (when matching labels exist)
+3. **Persist edit/delete/reorder** through storage — **done**
+4. **Export / import / clear** in settings — **done**
+5. **Toolbar icons** in manifest
+6. **One delete UX** — either wire `createDeleteDialog` or remove it; don’t maintain both
+7. **Commit + README** — how to load unpacked, Figma node map, font license note
 
 ### P1 — Design fidelity
 
 1. **Screenshot diff checklist** per Figma node (default, search, row hover, row edit)
 2. **Spacing tokens only** — no magic numbers in component CSS unless tokenized
 3. **Icon pipeline script** — download from Figma → strip rects → `currentColor` → validate 24×24 viewBox
-4. **Settings screen** from Figma (export/import/clear) — already planned once
+4. **Settings screen** from Figma (export/import/clear) — **done**
 
 ### P2 — Engineering quality
 
 1. **Partial renders** — `renderHeader()`, `renderList()`, `renderSearchBar()` instead of `replaceChildren(build())`
 2. **TypeScript or JSDoc** for item shape `{ id, text, category, order }`
-3. **Migrations** in service worker (`onInstalled` version bumps)
-4. **Minimal tests** for detector + storage round-trip
+3. **Migrations** in service worker (`onInstalled` version bumps) — **done**
+4. **Minimal tests** for detector + storage round-trip — **storage schema tests done**; detector tests pending
 
 ---
 
@@ -203,7 +203,12 @@ When user says “match Figma node X”:
 ```
 clipboard/
 ├── manifest.json              # MV3; storage permission; no icons yet
-├── background/service-worker.js # placeholder
+├── docs/DATA.md               # storage schema, limits, Chrome policy notes
+├── background/service-worker.js # migrations + storage access restriction
+├── shared/
+│   ├── storage.js             # chrome.storage.local adapter
+│   ├── storageSchema.js       # validation, migration, export/import (testable)
+│   └── categoryDetector.js
 ├── popup/
 │   ├── index.html
 │   ├── popup.js               # all app state + views (monolith)
@@ -215,7 +220,8 @@ clipboard/
     └── components/
         ├── iconButton.js/css  # inline SVG, tooltips, danger variant
         ├── clipRow.js/css     # default / hover / edit / delete-confirm
-        ├── deleteDialog.js/css # built but NOT wired in popup
+        ├── deleteDialog.js/css # wired for delete + clear-all confirm
+        ├── settingsView.js/css # categories + export/import/clear
         └── index.js
 ```
 
@@ -238,19 +244,20 @@ clipboard/
 
 ## 7. Suggested next session order
 
-1. Add `shared/storage.js` + load/save in `popup.js` `init()`
-2. Restore detector on add → set `category`
-3. Wire settings view (or remove gear until ready)
-4. Delete `confirmDeleteId` dock **or** switch to `createDeleteDialog` — not both
-5. Add manifest icons + root README
-6. Figma screenshot pass for `3008:7919` and `3008:7462` hover
-7. Commit with message reflecting each vertical slice
+1. ~~Add `shared/storage.js` + load/save in `popup.js` `init()`~~ — done
+2. Fix “All” tab to show all categories — done
+3. ~~Add `detector.js` on add~~ — done (`categoryDetector.js`)
+4. ~~Wire settings view (export/import/clear)~~ — done
+5. Delete `confirmDeleteId` dock **or** switch to `createDeleteDialog` — not both
+6. Add manifest icons + root README
+7. Figma screenshot pass for `3008:7919` and `3008:7462` hover
+8. Commit with message reflecting each vertical slice
 
 ---
 
 ## 8. One-line summary
 
-We built a product twice: first too much logic with the wrong UI, then the right UI with too little persistence — and most of the pain was **treating Figma exports as drop-in assets** and **re-rendering the whole popup** instead of respecting the design’s box model and keeping state in storage from day one.
+We built a product twice: first too much logic with the wrong UI, then the right UI with too little persistence — and most of the pain was **treating Figma exports as drop-in assets** and **re-rendering the whole popup** instead of respecting the design’s box model and keeping state in storage from day one. Storage, export/import, and migrations are now in place; see `docs/DATA.md`.
 
 ---
 

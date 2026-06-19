@@ -3,7 +3,12 @@ import { createIconButton } from "./iconButton.js";
 /**
  * Figma source: 3025:7929 (Delete confirmation dialog)
  */
-export function createDeleteDialog({ onDelete, onKeep } = {}) {
+export function createDeleteDialog({
+  title: titleText = "Are you sure you want to delete?",
+  deleteLabel = "Delete",
+  onDelete,
+  onKeep
+} = {}) {
   const overlay = document.createElement("div");
   overlay.className = "cb-deleteDialogOverlay";
   overlay.setAttribute("role", "presentation");
@@ -33,13 +38,13 @@ export function createDeleteDialog({ onDelete, onKeep } = {}) {
   }
   iconWrap.appendChild(iconRoot);
 
-  const title = document.createElement("p");
-  title.id = "cb-deleteDialogTitle";
-  title.className = "cb-deleteDialogTitle";
-  title.textContent = "Are you sure you want to delete?";
+  const titleEl = document.createElement("p");
+  titleEl.id = "cb-deleteDialogTitle";
+  titleEl.className = "cb-deleteDialogTitle";
+  titleEl.textContent = titleText;
 
   body.appendChild(iconWrap);
-  body.appendChild(title);
+  body.appendChild(titleEl);
 
   const actions = document.createElement("div");
   actions.className = "cb-deleteDialogActions";
@@ -56,7 +61,7 @@ export function createDeleteDialog({ onDelete, onKeep } = {}) {
   const del = document.createElement("button");
   del.type = "button";
   del.className = "cb-pillBtn cb-pillBtnDelete cb-deleteDialogBtn";
-  del.textContent = "Delete";
+  del.textContent = deleteLabel;
   del.addEventListener("click", (e) => {
     e.stopPropagation();
     onDelete?.();

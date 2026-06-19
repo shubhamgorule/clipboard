@@ -2,6 +2,8 @@ const CHEVRON_SVG = `<svg class="cb-categoryPickerChevron" viewBox="0 0 16 16" f
 
 const CHECK_SVG = `<svg class="cb-categoryPickerCheck" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
+const ADD_SVG = `<svg class="cb-categoryPickerAddIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 13H13V18C13 18.55 12.55 19 12 19C11.45 19 11 18.55 11 18V13H6C5.45 13 5 12.55 5 12C5 11.45 5.45 11 6 11H11V6C11 5.45 11.45 5 12 5C12.55 5 13 5.45 13 6V11H18C18.55 11 19 11.45 19 12C19 12.55 18.55 13 18 13Z" fill="currentColor"/></svg>`;
+
 let activePicker = null;
 
 function closeActivePicker() {
@@ -52,12 +54,16 @@ function renderOptions(menu, options, value, onSelect, { showAddCategoryOption =
     label.className = "cb-categoryPickerOptionLabel";
     label.textContent = option;
 
+    const start = document.createElement("span");
+    start.className = "cb-categoryPickerOptionStart";
+    start.appendChild(label);
+
     const check = document.createElement("span");
     check.className = "cb-categoryPickerOptionCheck";
     check.innerHTML = CHECK_SVG;
     check.hidden = !isSelected;
 
-    btn.appendChild(label);
+    btn.appendChild(start);
     btn.appendChild(check);
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -68,16 +74,31 @@ function renderOptions(menu, options, value, onSelect, { showAddCategoryOption =
   }
 
   if (showAddCategoryOption) {
+    const divider = document.createElement("div");
+    divider.className = "cb-categoryPickerDivider";
+    divider.setAttribute("role", "separator");
+    divider.setAttribute("aria-hidden", "true");
+    menu.appendChild(divider);
+
     const addBtn = document.createElement("button");
     addBtn.type = "button";
     addBtn.className = "cb-categoryPickerOption cb-categoryPickerOption--add";
     addBtn.setAttribute("role", "option");
 
+    const start = document.createElement("span");
+    start.className = "cb-categoryPickerOptionStart";
+
+    const icon = document.createElement("span");
+    icon.className = "cb-categoryPickerOptionIcon";
+    icon.innerHTML = ADD_SVG;
+
     const label = document.createElement("span");
     label.className = "cb-categoryPickerOptionLabel";
     label.textContent = "Add category";
 
-    addBtn.appendChild(label);
+    start.appendChild(icon);
+    start.appendChild(label);
+    addBtn.appendChild(start);
     addBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       closeActivePicker();

@@ -96,8 +96,8 @@
   z-index: 20;
   padding: 2px 6px;
   border-radius: 6px;
-  background: var(--cb-color-text);
-  color: #fff;
+  background: var(--cb-color-primary);
+  color: var(--cb-color-on-primary);
   font-family: var(--cb-font);
   font-size: 11px;
   line-height: 14px;
