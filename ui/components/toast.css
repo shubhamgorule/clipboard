@@ -42,6 +42,7 @@
 
 .cb-toast--danger{
   background: var(--cb-color-danger);
+  color: var(--cb-color-on-danger);
 }
 
 .cb-toastText{

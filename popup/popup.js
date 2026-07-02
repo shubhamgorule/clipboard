@@ -460,6 +460,24 @@ function cancelSearch() {
   render({ listEnter: true });
 }
 
+function isOutsideComposerDismissTarget(target) {
+  if (!(target instanceof Node)) return false;
+  if (document.querySelector(".cb-composer")?.contains(target)) return false;
+
+  const pickerMenu = document.querySelector(".cb-categoryPickerMenu.cb-categoryPickerMenu--open");
+  if (pickerMenu?.contains(target)) return false;
+
+  if (target.closest?.(".cb-deleteDialogOverlay")) return false;
+
+  return true;
+}
+
+function onDocumentPointerDown(event) {
+  if (!isSearchActive()) return;
+  if (!isOutsideComposerDismissTarget(event.target)) return;
+  cancelSearch();
+}
+
 async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
@@ -776,6 +794,7 @@ async function importClipboardBackup(file) {
     state.confirmDeleteId = null;
     state.confirmRemoveLabel = null;
     state.showAddCategoryDialog = false;
+    state.confirmClearAll = false;
     state.labelDraft = "";
     state.addCategory = defaultAddCategory();
     state.addCategoryLocked = false;
@@ -1269,6 +1288,8 @@ async function setAppearance({ colorMode, theme } = {}) {
 }
 
 async function init() {
+  document.addEventListener("pointerdown", onDocumentPointerDown, true);
+
   try {
     const prefs = await loadPreferences();
     const applied = applyAppearance({ colorMode: prefs.colorMode, theme: prefs.theme });
