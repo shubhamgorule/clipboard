@@ -332,6 +332,7 @@ button{
   background: var(--cb-color-primary);
   border: 0;
   color: var(--cb-color-on-primary);
+  box-shadow: var(--cb-shadow-action);
 }
 
 .cb-pillBtnAdd:hover:not(:disabled),
