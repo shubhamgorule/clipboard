@@ -20,7 +20,9 @@ export function createSettingsView({
   onMotionChange,
   onAddLabel,
   onRemoveLabel,
-  onExport
+  onExport,
+  onImport,
+  onClearAll
 } = {}) {
   const wrap = document.createElement("div");
   wrap.className = "cb-settings";
@@ -85,7 +87,9 @@ export function createSettingsView({
     })
   );
 
-  content.appendChild(buildDataSection({ onExport }));
+  content.appendChild(
+    buildDataSection({ onExport, onImport, onClearAll })
+  );
 
   wrap.appendChild(content);
 
@@ -346,9 +350,12 @@ function buildCategoriesSection({
   return section;
 }
 
-function buildDataSection({ onExport }) {
+function buildDataSection({ onExport, onImport, onClearAll }) {
   const section = document.createElement("section");
   section.className = "cb-settingsSection";
+
+  const actions = document.createElement("div");
+  actions.className = "cb-settingsDataActions";
 
   const exportBtn = document.createElement("button");
   exportBtn.type = "button";
@@ -356,14 +363,41 @@ function buildDataSection({ onExport }) {
   exportBtn.textContent = "Export data";
   exportBtn.addEventListener("click", () => onExport?.());
 
+  const importBtn = document.createElement("button");
+  importBtn.type = "button";
+  importBtn.className = "cb-pillBtn cb-pillBtnCancel cb-settingsDataBtn";
+  importBtn.textContent = "Import data";
+
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = ".json,application/json";
+  fileInput.hidden = true;
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    fileInput.value = "";
+    if (file) onImport?.(file);
+  });
+  importBtn.addEventListener("click", () => fileInput.click());
+
+  const clearBtn = document.createElement("button");
+  clearBtn.type = "button";
+  clearBtn.className = "cb-pillBtn cb-pillBtnDelete cb-settingsDataBtn cb-settingsDataBtnClear";
+  clearBtn.textContent = "Clear all data";
+  clearBtn.addEventListener("click", () => onClearAll?.());
+
+  actions.appendChild(exportBtn);
+  actions.appendChild(importBtn);
+  actions.appendChild(clearBtn);
+
   const body = document.createElement("div");
   body.className = "cb-settingsSectionBody";
-  body.appendChild(exportBtn);
+  body.appendChild(actions);
+  body.appendChild(fileInput);
 
   section.appendChild(
     buildSectionHead(
       "Local storage",
-      "Snippets are saved on this device only. No account or internet required. Export a JSON file if you want a backup copy."
+      "Snippets stay on this device only. Export a backup, import a previous export, or clear everything."
     )
   );
   section.appendChild(body);

@@ -8,7 +8,7 @@ Local-first persistence for the Clipboard Chrome extension. **v1 uses device sto
 |-------|-----------|
 | `chrome.storage.local` for all snippets | Login / website |
 | Auto-save on every change | Cloud sync |
-| Export data (Settings) | Import UI (can add later) |
+| Export data (Settings) | Import & clear in Settings |
 | Categories stored locally | Email-linked accounts |
 
 ## Chrome extension alignment

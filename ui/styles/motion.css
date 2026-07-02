@@ -301,7 +301,18 @@ html.cb-motion .cb-motion-settings-enter .cb-themeList .cb-themeOption:nth-child
 
 html.cb-motion .cb-motion-settings-enter .cb-settingsDataBtn {
   animation: cb-motion-item-in-soft var(--cb-motion-duration-normal) var(--cb-motion-ease-out) both;
-  animation-delay: 60ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsDataActions .cb-settingsDataBtn:nth-child(1) {
+  animation-delay: 40ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsDataActions .cb-settingsDataBtn:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+html.cb-motion .cb-motion-settings-enter .cb-settingsDataActions .cb-settingsDataBtn:nth-child(3) {
+  animation-delay: 100ms;
 }
 
 html.cb-motion .cb-motion-settings-enter .cb-settingsLabelRow {
@@ -460,17 +471,17 @@ html.cb-motion .cb-categoryPickerChevron {
   transition: transform var(--cb-motion-duration-fast) var(--cb-motion-ease-out);
 }
 
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption {
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open .cb-categoryPickerOption {
   animation: cb-motion-item-in-soft var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
 }
 
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(1) { animation-delay: 0ms; }
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(2) { animation-delay: 20ms; }
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(3) { animation-delay: 40ms; }
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(4) { animation-delay: 60ms; }
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerOption:nth-child(n+5) { animation-delay: 60ms; }
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open .cb-categoryPickerOption:nth-child(1) { animation-delay: 0ms; }
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open .cb-categoryPickerOption:nth-child(2) { animation-delay: 20ms; }
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open .cb-categoryPickerOption:nth-child(3) { animation-delay: 40ms; }
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open .cb-categoryPickerOption:nth-child(4) { animation-delay: 60ms; }
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open .cb-categoryPickerOption:nth-child(n+5) { animation-delay: 60ms; }
 
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) .cb-categoryPickerDivider {
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open .cb-categoryPickerDivider {
   animation: cb-motion-fade-in var(--cb-motion-duration-fast) ease both;
   animation-delay: 30ms;
 }
@@ -539,7 +550,7 @@ html.cb-motion .cb-deleteDialog .cb-deleteDialogActions {
 }
 
 /* Dropdown menus */
-html.cb-motion .cb-categoryPickerMenu:not([hidden]) {
+html.cb-motion .cb-categoryPickerMenu.cb-categoryPickerMenu--open {
   animation: cb-motion-menu-in var(--cb-motion-duration-fast) var(--cb-motion-ease-out) both;
   transform-origin: top center;
 }

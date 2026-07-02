@@ -160,6 +160,7 @@ export function createClipRow({
       const categoryPicker = createCategoryPicker({
         value: currentCategory,
         options: categoryOptions,
+        deferClick: true,
         onChange: (next) => {
           currentCategory = next;
           onCategoryChange?.(next);

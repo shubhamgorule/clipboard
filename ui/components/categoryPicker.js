@@ -6,8 +6,34 @@ const ADD_SVG = `<svg class="cb-categoryPickerAddIcon" viewBox="0 0 24 24" fill=
 
 let activePicker = null;
 
-function closeActivePicker() {
+function syncMenuOptions(menu, options, currentValue, onSelect, extras) {
+  renderOptions(menu, options, currentValue, onSelect, extras);
+}
+
+function detachAllPickerMenus() {
+  for (const menu of document.querySelectorAll(".cb-categoryPickerMenu")) {
+    resetMenuPosition(menu);
+    menu.replaceChildren();
+    menu.hidden = true;
+    menu.classList.remove("cb-categoryPickerMenu--open");
+    menu.remove();
+  }
+
+  for (const trigger of document.querySelectorAll(".cb-categoryPickerTrigger")) {
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  activePicker = null;
+  unbindGlobalDismiss();
+}
+
+export function closeAllCategoryPickers() {
   activePicker?.cbClose?.();
+  detachAllPickerMenus();
+}
+
+function closeActivePicker() {
+  closeAllCategoryPickers();
 }
 
 function bindGlobalDismiss() {
@@ -148,7 +174,8 @@ export function createCategoryPicker({
   options = [],
   onChange,
   showAddCategoryOption = false,
-  onAddCategory
+  onAddCategory,
+  deferClick = false
 } = {}) {
   const root = document.createElement("div");
   root.className = "cb-categoryPicker";
@@ -180,11 +207,13 @@ export function createCategoryPicker({
   function setValue(next) {
     currentValue = next;
     triggerLabel.textContent = next;
-    renderOptions(menu, options, currentValue, (selected) => {
-      currentValue = selected;
-      triggerLabel.textContent = selected;
-      onChange?.(selected);
-    }, pickerExtras());
+    if (isOpen) {
+      syncMenuOptions(menu, options, currentValue, (selected) => {
+        currentValue = selected;
+        triggerLabel.textContent = selected;
+        onChange?.(selected);
+      }, pickerExtras());
+    }
   }
 
   function openMenu() {
@@ -193,8 +222,9 @@ export function createCategoryPicker({
     isOpen = true;
     activePicker = root;
     menu.hidden = false;
+    menu.classList.add("cb-categoryPickerMenu--open");
     trigger.setAttribute("aria-expanded", "true");
-    renderOptions(menu, options, currentValue, (selected) => {
+    syncMenuOptions(menu, options, currentValue, (selected) => {
       setValue(selected);
       onChange?.(selected);
     }, pickerExtras());
@@ -207,18 +237,28 @@ export function createCategoryPicker({
     if (!isOpen) return;
     isOpen = false;
     menu.hidden = true;
+    menu.classList.remove("cb-categoryPickerMenu--open");
     trigger.setAttribute("aria-expanded", "false");
     resetMenuPosition(menu);
-    root.appendChild(menu);
+    menu.replaceChildren();
+    menu.remove();
     if (activePicker === root) activePicker = null;
     unbindGlobalDismiss();
   }
 
-  trigger.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (isOpen) closeMenu();
-    else openMenu();
-  });
+  function bindTriggerClick() {
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (isOpen) closeMenu();
+      else openMenu();
+    });
+  }
+
+  if (deferClick) {
+    requestAnimationFrame(() => bindTriggerClick());
+  } else {
+    bindTriggerClick();
+  }
 
   root.cbSetValue = setValue;
   root.cbClose = closeMenu;
@@ -226,8 +266,8 @@ export function createCategoryPicker({
     options = nextOptions;
     if (!options.includes(currentValue)) {
       setValue(nextOptions[0] ?? "");
-    } else {
-      renderOptions(menu, options, currentValue, (selected) => {
+    } else if (isOpen) {
+      syncMenuOptions(menu, options, currentValue, (selected) => {
         setValue(selected);
         onChange?.(selected);
       }, pickerExtras());
@@ -236,6 +276,5 @@ export function createCategoryPicker({
 
   setValue(currentValue);
   root.appendChild(trigger);
-  root.appendChild(menu);
   return root;
 }

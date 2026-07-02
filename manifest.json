@@ -1,12 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Clipboard",
-  "version": "0.2.2",
-  "description": "Local-first clipboard with fast copy/paste.",
+  "version": "1.0.2",
+  "description": "Local-first text snippets. Save, search, categorize, and copy — no account or cloud.",
+  "homepage_url": "https://github.com/shubhamgorule/clipboard/blob/main/docs/privacy-policy.html",
   "permissions": ["storage"],
+  "icons": {
+    "16": "store/icons/icon16.png",
+    "48": "store/icons/icon48.png",
+    "128": "store/icons/icon128.png"
+  },
   "action": {
     "default_title": "Clipboard",
-    "default_popup": "popup/index.html"
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "store/icons/icon16.png",
+      "48": "store/icons/icon48.png",
+      "128": "store/icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background/service-worker.js",

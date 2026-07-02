@@ -110,3 +110,17 @@ export async function savePreferences(patch) {
 
   return next;
 }
+
+/** Remove saved appearance preferences (used by Clear all data). */
+export async function clearPreferences() {
+  try {
+    await chrome.storage.local.remove(PREFERENCES_KEY);
+    if (chrome.runtime?.lastError) {
+      throw new Error(chrome.runtime.lastError.message);
+    }
+  } catch (err) {
+    throw new Error(getPreferencesErrorMessage(err));
+  }
+
+  return normalizePreferences(null);
+}

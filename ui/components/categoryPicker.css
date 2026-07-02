@@ -51,9 +51,17 @@
   border-radius: var(--cb-category-picker-menu-radius);
   background: var(--cb-color-surface-raised);
   box-shadow: var(--cb-shadow-menu);
-  display: flex;
   flex-direction: column;
   gap: var(--cb-space-4);
+}
+
+.cb-categoryPickerMenu.cb-categoryPickerMenu--open{
+  display: flex;
+}
+
+.cb-categoryPickerMenu[hidden],
+.cb-categoryPickerMenu:not(.cb-categoryPickerMenu--open){
+  display: none !important;
 }
 
 .cb-categoryPickerDivider{

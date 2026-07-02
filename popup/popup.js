@@ -1,6 +1,6 @@
 import { createIconButton, preloadIcons } from "../ui/components/iconButton.js";
 import { createCategoryBar } from "../ui/components/categoryBar.js";
-import { createCategoryPicker } from "../ui/components/categoryPicker.js";
+import { closeAllCategoryPickers, createCategoryPicker } from "../ui/components/categoryPicker.js";
 import { createClipRow, setupListReorder, resizeClipRowEditInput } from "../ui/components/clipRow.js";
 import { createAddCategoryDialog } from "../ui/components/addCategoryDialog.js";
 import { createDeleteDialog } from "../ui/components/deleteDialog.js";
@@ -9,10 +9,10 @@ import { createEmptyState } from "../ui/components/emptyState.js";
 import { createSettingsView } from "../ui/components/settingsView.js";
 import { showToast } from "../ui/components/toast.js";
 import { detectCategory } from "../shared/categoryDetector.js";
-import { loadData, saveData, serializeExport } from "../shared/storage.js";
-import { loadPreferences, savePreferences } from "../shared/preferences.js";
+import { loadData, saveData, serializeExport, clearData, importFromText } from "../shared/storage.js";
+import { loadPreferences, savePreferences, clearPreferences } from "../shared/preferences.js";
 import { applyAppearance, COLOR_MODES, THEMES } from "../shared/themes.js";
-import { newClipId } from "../shared/storageSchema.js";
+import { newClipId, MAX_IMPORT_BYTES, StorageError } from "../shared/storageSchema.js";
 
 const UNCATEGORIZED = "Uncategorized";
 const ALL_CATEGORY = "All";
@@ -33,6 +33,7 @@ const state = {
   confirmDeleteId: null,
   confirmRemoveLabel: null,
   showAddCategoryDialog: false,
+  confirmClearAll: false,
   colorMode: "light",
   theme: "default",
   motionEnabled: true
@@ -86,6 +87,7 @@ function render({
   settingsEnter = false,
   focusRowId = null
 } = {}) {
+  closeAllCategoryPickers();
   const app = $("app");
   app.replaceChildren(build());
   applyMotionIntent({ screenTransition, listEnter, settingsEnter, focusRowId });
@@ -141,7 +143,7 @@ function applyMotionIntent({
     scheduleClassCleanup("cb-motion-row-enter", 350);
   }
 
-  if (state.confirmDeleteId || state.confirmRemoveLabel || state.showAddCategoryDialog) {
+  if (state.confirmDeleteId || state.confirmRemoveLabel || state.showAddCategoryDialog || state.confirmClearAll) {
     for (const overlay of document.querySelectorAll(".cb-deleteDialogOverlay")) {
       overlay.classList.add("cb-motion-dialog-enter");
     }
@@ -405,9 +407,19 @@ function syncHomeChrome() {
   if (catBar) catBar.hidden = isSearchActive() && isSearchFiltering();
 }
 
+function itemTextExists(text) {
+  const normalized = (text ?? "").trim();
+  if (!normalized) return false;
+  return state.items.some((item) => item.text.trim() === normalized);
+}
+
 function addItem() {
   const qTrimmed = (state.query ?? "").trim();
   if (!qTrimmed) return;
+  if (itemTextExists(qTrimmed)) {
+    showToast({ message: "This text already exists" });
+    return;
+  }
   state.items.unshift({
     id: newClipId(),
     category: hasCategories() ? state.addCategory : UNCATEGORIZED,
@@ -446,24 +458,6 @@ function cancelSearch() {
     return;
   }
   render({ listEnter: true });
-}
-
-function isOutsideComposerDismissTarget(target) {
-  if (!(target instanceof Node)) return false;
-  if (document.querySelector(".cb-composer")?.contains(target)) return false;
-
-  const pickerMenu = document.querySelector(".cb-categoryPickerMenu:not([hidden])");
-  if (pickerMenu?.contains(target)) return false;
-
-  if (target.closest?.(".cb-deleteDialogOverlay")) return false;
-
-  return true;
-}
-
-function onDocumentPointerDown(event) {
-  if (!isSearchActive()) return;
-  if (!isOutsideComposerDismissTarget(event.target)) return;
-  cancelSearch();
 }
 
 async function copyText(text) {
@@ -759,6 +753,91 @@ function exportClipboardBackup() {
   showToast({ message: "Data exported" });
 }
 
+async function importClipboardBackup(file) {
+  if (!file) return;
+  if (file.size > MAX_IMPORT_BYTES) {
+    showToast({
+      message: `Import file is too large (max ${Math.round(MAX_IMPORT_BYTES / 1_000_000)} MB).`,
+      tone: "danger"
+    });
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    const data = await importFromText(text);
+    state.items = data.items;
+    state.labels = data.labels;
+    state.activeCategory = ALL_CATEGORY;
+    state.mode = "default";
+    state.query = "";
+    state.editingId = null;
+    state.editDraft = "";
+    state.confirmDeleteId = null;
+    state.confirmRemoveLabel = null;
+    state.showAddCategoryDialog = false;
+    state.labelDraft = "";
+    state.addCategory = defaultAddCategory();
+    state.addCategoryLocked = false;
+    render({ screenTransition: true, listEnter: true });
+    showToast({ message: "Data imported" });
+  } catch (err) {
+    console.error("Import failed:", err);
+    showToast({
+      message: err instanceof StorageError ? err.message : "Could not import that file.",
+      tone: "danger"
+    });
+  }
+}
+
+function requestClearAllData() {
+  state.confirmClearAll = true;
+  render({ settingsEnter: true });
+}
+
+function cancelClearAllData() {
+  state.confirmClearAll = false;
+  render({ settingsEnter: true });
+}
+
+async function confirmClearAllData() {
+  try {
+    await clearData();
+    await clearPreferences();
+  } catch (err) {
+    console.error("Clear all failed:", err);
+    showToast({
+      message: err?.message || "Could not clear stored data.",
+      tone: "danger"
+    });
+    return;
+  }
+
+  state.items = [];
+  state.labels = [];
+  state.activeCategory = ALL_CATEGORY;
+  state.mode = "settings";
+  state.query = "";
+  state.editingId = null;
+  state.editDraft = "";
+  state.confirmDeleteId = null;
+  state.confirmRemoveLabel = null;
+  state.confirmClearAll = false;
+  state.showAddCategoryDialog = false;
+  state.labelDraft = "";
+  state.addCategory = UNCATEGORIZED;
+  state.addCategoryLocked = false;
+  state.motionEnabled = true;
+
+  const applied = applyAppearance({ colorMode: "light", theme: "default" });
+  state.colorMode = applied.colorMode;
+  state.theme = applied.theme;
+  syncMotionClass();
+
+  render({ settingsEnter: true });
+  showToast({ message: "All data cleared", tone: "danger" });
+}
+
 function fillContainer(container) {
   container.replaceChildren();
   const items = getFilteredItems();
@@ -805,7 +884,7 @@ function fillContainer(container) {
         onEdit: (e) => {
           e?.stopPropagation();
           state.confirmDeleteId = null;
-          startEdit(it.id);
+          queueMicrotask(() => startEdit(it.id));
         },
         onDelete: (e) => {
           e?.stopPropagation();
@@ -918,6 +997,19 @@ function build() {
     );
   }
 
+  if (state.mode === "settings" && state.confirmClearAll) {
+    inner.appendChild(
+      createDeleteDialog({
+        title: "Clear all snippets, categories, and preferences?",
+        deleteLabel: "Clear all",
+        onDelete: () => {
+          void confirmClearAllData();
+        },
+        onKeep: cancelClearAllData
+      })
+    );
+  }
+
   if (state.showAddCategoryDialog && state.mode !== "settings") {
     inner.appendChild(
       createAddCategoryDialog({
@@ -1011,7 +1103,11 @@ function buildSettingsView() {
     },
     onAddLabel: addLabel,
     onRemoveLabel: requestRemoveLabel,
-    onExport: exportClipboardBackup
+    onExport: exportClipboardBackup,
+    onImport: (file) => {
+      void importClipboardBackup(file);
+    },
+    onClearAll: requestClearAllData
   });
 }
 
@@ -1173,8 +1269,6 @@ async function setAppearance({ colorMode, theme } = {}) {
 }
 
 async function init() {
-  document.addEventListener("pointerdown", onDocumentPointerDown, true);
-
   try {
     const prefs = await loadPreferences();
     const applied = applyAppearance({ colorMode: prefs.colorMode, theme: prefs.theme });
